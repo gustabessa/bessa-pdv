@@ -8,5 +8,16 @@ export default {
       cancel: true,
       persistent: true
     })
+  },
+  prompt (msg) {
+    return Dialog.create({
+      message: msg,
+      cancel: true,
+      prompt: {
+        model: '',
+        type: 'text'
+      },
+      persistent: true
+    })
   }
 }

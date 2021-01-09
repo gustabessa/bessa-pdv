@@ -3,6 +3,16 @@
     <q-card class="venda-card q-mt-md q-mb-md">
       <q-card-section class="card-header">
         Venda
+        <div class="float-right">
+          <q-btn
+            flat
+            dense
+            round
+            class="q-mr-md"
+            icon="input"
+            @click="importarVenda"
+          />
+        </div>
       </q-card-section>
       <q-separator />
       <q-card-section>
@@ -140,7 +150,7 @@
                     </q-popup-edit>
                   </q-td>
                   <q-td key="precoTotal" :props="props">
-                    {{ formataDinheiro(props.row.quantidade * Number(props.row.preco.replace(',', '.'))) }}
+                    {{ formataDinheiro(props.row.precoTotal) }}
                   </q-td>
                 </q-tr>
               </template>
@@ -229,6 +239,53 @@ export default {
     }
   },
   methods: {
+    importarVenda () {
+      this.loading = true
+      const callback = {
+        onSuccess: data => {
+          if (data && !data.hasError) {
+            this.$q.notify({
+              type: 'positive',
+              message: 'Venda importada com sucesso!',
+              timeout: 2000
+            })
+            this.cliente = data.cliente
+            this.itensVenda = data.itensVenda.map(
+              item => {
+                return {
+                  fk_itemvenda_produto: item.fk_itemvenda_produto,
+                  nome: item.nome,
+                  preco: item.preco,
+                  quantidade: item.quantidade,
+                  precoTotal: item.precoTotal
+                }
+              }
+            )
+          } else if (data.hasError) {
+            console.error(data.techError)
+            this.$q.notify({
+              type: 'negative',
+              message: data.messageError,
+              timeout: 2000
+            })
+          }
+          this.loading = false
+        },
+        onError: err => {
+          console.error(err)
+          this.$q.notify({
+            type: 'negative',
+            message: 'Erro ao buscar venda.',
+            timeout: 2000
+          })
+          this.loading = false
+        }
+      }
+      dialog.prompt('Importar venda:')
+        .onOk(data => httpUtil.doGet('/api/venda/' + data, callback.onSuccess, callback.onError))
+        // httpUtil.doPost('/api/venda', venda, callback.onSuccess, callback.onError)
+        .onCancel(() => { this.loading = false })
+    },
     escolherItem (row, props) {
       this.selected = [row]
     },
@@ -238,16 +295,25 @@ export default {
     filterFn () {
       httpUtil.doGet('/api/produto',
         data => {
-          if (data && data.length > 0) {
-            this.table = true
-            this.data = data
+          if (data && !data.hasError) {
+            if (data.length > 0) {
+              this.table = true
+              this.data = data
+            } else {
+              this.$q.notify({
+                type: 'negative',
+                message: 'Nenhum resultado para a busca.',
+                timeout: 2000
+              })
+              this.table = false
+            }
           } else {
+            console.error(data.techError)
             this.$q.notify({
               type: 'negative',
-              message: 'Nenhum resultado para a busca.',
+              message: data.messageError,
               timeout: 2000
             })
-            this.table = false
           }
         },
         err => {
@@ -279,15 +345,25 @@ export default {
       }
       const callback = {
         onSuccess: data => {
-          this.$q.notify({
-            type: 'positive',
-            message: 'Venda finalizada com sucesso!',
-            timeout: 2000
-          })
+          if (data && !data.hasError) {
+            this.$q.notify({
+              type: 'positive',
+              message: 'Venda finalizada com sucesso!',
+              timeout: 2000
+            })
+            window.open(data)
+            this.itensVenda = []
+            this.cliente = null
+          } else {
+            console.log()
+            console.error(data.techError)
+            this.$q.notify({
+              type: 'negative',
+              message: data.messageError,
+              timeout: 2000
+            })
+          }
           this.loading = false
-          window.open(data)
-          this.itensVenda = []
-          this.cliente = null
         },
         onError: err => {
           console.error(err)
@@ -334,7 +410,11 @@ export default {
       this.quantidade = null
     },
     atualizaPrecoTotal (row, qtde, preco) {
-      row.precoTotal = Number.parseFloat(qtde) * Number.parseFloat(preco)
+      if (typeof row.preco === 'string') {
+        row.preco = Number.parseFloat(row.preco.replace(',', '.')).toFixed(2)
+      }
+      row.precoTotal = Number.parseFloat(qtde) * Number.parseFloat(row.preco)
+      console.log(row)
     },
     getPrecoTotal () {
       this.quantidade = Number.parseFloat(this.quantidade)

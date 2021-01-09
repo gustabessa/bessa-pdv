@@ -31,6 +31,7 @@
           @keyup.enter="filterFn"
           hint="Busque pelo nome do produto"
           style="padding-bottom: 32px"
+          dense
         >
           <template v-slot:append>
             <q-icon
@@ -59,9 +60,9 @@
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-input outlined v-model="id" class="q-mb-md" label="Id" readonly />
-        <q-input outlined v-model="nome" class="q-mb-md" label="Nome" ref="nomeProduto"/>
-        <q-input outlined v-model="preco" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço" />
+        <q-input dense outlined v-model="id" class="q-mb-md" label="Id" readonly />
+        <q-input dense outlined v-model="nome" class="q-mb-md" label="Nome" ref="nomeProduto"/>
+        <q-input dense outlined v-model="preco" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço" />
       </q-card-section>
       <q-card-actions align="center" class="text-primary">
         <!-- <q-btn style="width: 40%;" outline class="btn-purple-inverse" label="Limpar" @click="limparCampos()" /> -->
@@ -113,16 +114,25 @@ export default {
     filterFn () {
       httpUtil.doGet('/api/produto',
         data => {
-          if (data && data.length > 0) {
-            this.table = true
-            this.data = data
-          } else {
+          if (data && !data.hasError) {
+            if (data.length > 0) {
+              this.table = true
+              this.data = data
+            } else {
+              this.$q.notify({
+                type: 'negative',
+                message: 'Nenhum resultado para a busca.',
+                timeout: 2000
+              })
+              this.table = false
+            }
+          } else if (data.hasError) {
+            console.error(data.techError)
             this.$q.notify({
               type: 'negative',
-              message: 'Nenhum resultado para a busca.',
+              message: data.messageError,
               timeout: 2000
             })
-            this.table = false
           }
         },
         err => {
@@ -161,15 +171,24 @@ export default {
         }
         const callback = {
           onSuccess: data => {
-            this.$q.notify({
-              type: 'positive',
-              message: 'Produto ' + (this.id ? 'atualizado' : 'cadastrado') + ' com sucesso!',
-              timeout: 2000
-            })
-            if (!this.id) {
-              this.id = data.id
-              this.nome = data.nome
-              this.preco = data.preco
+            if (data && !data.hasError) {
+              this.$q.notify({
+                type: 'positive',
+                message: 'Produto ' + (this.id ? 'atualizado' : 'cadastrado') + ' com sucesso!',
+                timeout: 2000
+              })
+              if (!this.id) {
+                this.id = data.id
+                this.nome = data.nome
+                this.preco = data.preco
+              }
+            } else if (data.hasError) {
+              console.error(data.techError)
+              this.$q.notify({
+                type: 'negative',
+                message: data.messageError,
+                timeout: 2000
+              })
             }
             this.loading = false
           },
@@ -206,12 +225,21 @@ export default {
         .onOk(() => {
           httpUtil.doDelete('/api/produto', { id: this.id },
             data => {
-              this.novoProduto()
-              this.$q.notify({
-                type: 'positive',
-                message: 'Produto excluído com sucesso!',
-                timeout: 2000
-              })
+              if (data && !data.hasError) {
+                this.novoProduto()
+                this.$q.notify({
+                  type: 'positive',
+                  message: 'Produto excluído com sucesso!',
+                  timeout: 2000
+                })
+              } else if (data.hasError) {
+                console.error(data.techError)
+                this.$q.notify({
+                  type: 'negative',
+                  message: data.messageError,
+                  timeout: 2000
+                })
+              }
             },
             err => {
               console.error(err)

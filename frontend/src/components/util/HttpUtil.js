@@ -82,7 +82,7 @@ export default {
         sucesso(data.result)
       }
     } else {
-      falha(data.messageError)
+      sucesso(data)
     }
   }
 }

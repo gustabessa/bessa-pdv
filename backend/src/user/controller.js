@@ -5,11 +5,13 @@ const saltRounds = 10;
 
 exports.create = (req, res, next) => {
 
-  this.validaUser(req.body);
+  if (!this.validaUser(req.body, next)) {
+    return
+  }
 
   const hashPass = bcrypt.hashSync(req.body.senha, saltRounds, (err, hash) => {
     if (err) {
-       next(err);
+       next({messageError: 'Erro ao encriptar senha.', techError: err.toString()});
     } else {
       return hash;
     }
@@ -29,17 +31,29 @@ exports.create = (req, res, next) => {
     res.send(data)
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao criar usuário.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
 exports.findAll = (req, res, next) => {
   User.findAll()
   .then(data => {
-    res.send(data)
+    if (data) {
+      res.send(data)
+    } else {
+      next({messageError: 'Nenhum usuário encontrado.', techError: 'Nada encontrado.'})
+    }
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao buscar todos os usuários.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
@@ -48,10 +62,18 @@ exports.findOne = (req, res, next) => {
 
   User.findOne({where: {id: id}})
   .then(data => {
-    res.send(data)
+    if (data) {
+      res.send(data)
+    } else {
+      next({messageError: 'Usuário não encontrado.', techError: 'Nada encontrado.'})
+    }
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao buscar usuário.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
@@ -65,18 +87,26 @@ exports.destroy = (req, res, next) => {
     res.send({'message': 'ok', 'affectedRows': affectedRows})
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao excluir usuário.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
-exports.validaUser = (body) => {
+exports.validaUser = (body, next) => {
   if (!body.usuario) {
-    throw 'Usuário inválido!'
+    next({messageError: 'Usuário inválido!', techError: 'Erro de validação do formulário.'}) 
+    return false
   }
   if (!body.senha) {
-    throw 'Senha inválida!'
+    next({messageError: 'Senha inválida!', techError: 'Erro de validação do formulário.'}) 
+    return false
   }
   if (!body.nomeEmpresa) {
-    throw 'Nome da Empresa inválido!'
+    next({messageError: 'Nome da Empresa inválido!', techError: 'Erro de validação do formulário.'}) 
+    return false
   }
+  return true
 }

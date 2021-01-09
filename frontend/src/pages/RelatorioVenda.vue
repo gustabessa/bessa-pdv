@@ -10,6 +10,7 @@
         <div class="row">
           <div class="col-sm-3">
             <q-input
+              dense
               outlined
               label="Preço Inicial (R$)"
               v-model="precoInicial"
@@ -20,6 +21,7 @@
           </div>
           <div class="col-sm-3">
             <q-input
+              dense
               outlined
               label="Preço Final (R$)"
               v-model="precoFinal"
@@ -30,6 +32,7 @@
           </div>
           <div class="col-sm-3">
             <q-input
+              dense
               outlined
               label="Data Inicial"
               v-model="dataInicial"
@@ -38,6 +41,7 @@
           </div>
           <div class="col-sm-3">
             <q-input
+              dense
               outlined
               label="Data Final"
               v-model="dataFinal"
@@ -207,11 +211,18 @@ export default {
   methods: {
     generateReport () {
       if (this.selected[0]) {
-        httpUtil.doGet('/api/venda/report',
+        httpUtil.doGet('/api/venda/report/history',
           data => {
-            // window.location.assign(data)
-            // window.location.href = data
-            window.open(data)
+            if (data && !data.hasError) {
+              window.open(data)
+            } else {
+              console.error(data.techError)
+              this.$q.notify({
+                type: 'negative',
+                message: data.messageError,
+                timeout: 2000
+              })
+            }
           },
           err => {
             console.error(err)
@@ -238,15 +249,24 @@ export default {
       }
       httpUtil.doGet('/api/venda',
         data => {
-          if (data && data.length > 0) {
-            this.data = data
+          if (data && !data.hasError) {
+            if (data.length > 0) {
+              this.data = data
+            } else {
+              this.$q.notify({
+                type: 'negative',
+                message: 'Nenhum resultado para a busca.',
+                timeout: 2000
+              })
+              this.data = []
+            }
           } else {
+            console.error(data.techError)
             this.$q.notify({
               type: 'negative',
-              message: 'Nenhum resultado para a busca.',
+              message: data.messageError,
               timeout: 2000
             })
-            this.data = []
           }
         },
         err => {

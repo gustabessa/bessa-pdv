@@ -14,6 +14,12 @@ module.exports = (app) => {
   app.get('/produto', controller.findAll);
 
   app.use((error, req, res, next) => {
-    return res.status(200).json({ messageError: error.toString(), hasError: true });
+    return res.status(200).send(
+      { 
+        messageError: error.messageError,
+        hasError: true,
+        techError: error.techError
+      }
+    );
   });
 }

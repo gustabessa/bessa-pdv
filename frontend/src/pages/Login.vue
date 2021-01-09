@@ -50,13 +50,23 @@ export default {
       }
       httpUtil.doPost('/api/auth', user,
         data => {
-          this.$router.push('/')
+          if (data && !data.hasError) {
+            this.$router.push('/')
+          } else if (data.hasError) {
+            console.error(data.techError)
+            this.$q.notify({
+              type: 'negative',
+              message: data.messageError,
+              timeout: 2000
+            })
+          }
           this.loading = false
         },
         err => {
+          console.error(err)
           this.$q.notify({
             type: 'negative',
-            message: err,
+            message: 'Erro ao autenticar.',
             timeout: 2000
           })
           this.loading = false

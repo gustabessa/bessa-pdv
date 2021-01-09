@@ -60,12 +60,21 @@ export default {
       }
       httpUtil.doPost('/api/user', userVO,
         data => {
-          this.$q.notify({
-            type: 'positive',
-            message: 'Usuário cadastrado com sucesso!',
-            timeout: 2000
-          })
-          this.$router.push('/login')
+          if (data && !data.hasError) {
+            this.$q.notify({
+              type: 'positive',
+              message: 'Usuário cadastrado com sucesso!',
+              timeout: 2000
+            })
+            this.$router.push('/login')
+          } else if (data.hasError) {
+            console.error(data.techError)
+            this.$q.notify({
+              type: 'negative',
+              message: data.messageError,
+              timeout: 2000
+            })
+          }
           this.loading = false
         },
         err => {

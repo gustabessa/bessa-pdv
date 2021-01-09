@@ -4,7 +4,9 @@ const db = require('../configs/sequelize');
 
 exports.create = (req, res, next) => {
 
-  this.validaProduto(req, req.body);
+  if (!this.validaProduto(req, req.body, next)) {
+    return
+  }
 
   const produto = {}
   produto.fk_produto_user = req.userId
@@ -16,13 +18,19 @@ exports.create = (req, res, next) => {
     res.send(data)
   })
   .catch(err => {
-    next(err);
+    const errorResponse = {
+      messageError: 'Erro ao criar produto.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
 exports.update = (req, res, next) => {
 
-  this.validaProduto(req, req.body);
+  if (!this.validaProduto(req, req.body, next)) {
+    return
+  }
 
   const produto = {}
   const condicao = {
@@ -38,7 +46,11 @@ exports.update = (req, res, next) => {
     res.send(data)
   })
   .catch(err => {
-    next(err);
+    const errorResponse = {
+      messageError: 'Erro ao atualizar produto.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
@@ -57,10 +69,18 @@ exports.findAll = (req, res, next) => {
 
   Produto.findAll({where: where})
   .then(data => {
-    res.send(data)
+    if (data) {
+      res.send(data)
+    } else {
+      next({messageError: 'Nenhum produto encontrado!', techError: 'Nada encontrado.'})
+    }
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao buscar todos os produtos.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
@@ -69,17 +89,25 @@ exports.findOne = (req, res, next) => {
 
   Produto.findOne({where: {id: id}})
   .then(data => {
-    res.send(data)
+    if (data) {
+      res.send(data)
+    } else {
+      next({messageError: 'Produto não encontrado.', techError: 'Nada encontrado.'})
+    }
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao buscar produto.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
 exports.destroy = (req, res, next) => {
 
   if (!req.body.id) {
-    next('Id deve ser diferente de nulo na exclusão.')
+    next({messageError: 'Id deve ser diferente de nulo na exclusão.', techError: 'null id'})
   }
 
   Produto.destroy({
@@ -91,21 +119,30 @@ exports.destroy = (req, res, next) => {
     res.send({'message': 'ok', 'affectedRows': affectedRows})
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao excluir produto.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
-exports.validaProduto = (req, body) => {
+exports.validaProduto = (req, body, next) => {
   if (req.method !== 'POST' && !body.id) {
-    throw 'Produto inválido!'
+    next({messageError: 'Produto inválido!', techError: 'Erro no preenchimento do formulário.'})
+    return false
   }
   if (req.method !== 'POST' && !req.userId) {
-    throw 'Usuário inválido!'
+    next({messageError: 'Usuário inválido!', techError: 'Erro no preenchimento do formulário.'})
+    return false
   }
   if (!body.nome) {
-    throw 'Nome inválido!'
+    next({messageError: 'Nome inválido!', techError: 'Erro no preenchimento do formulário.'})
+    return false
   }
   if (!body.preco) {
-    throw 'Preço inválido!'
+    next({messageError: 'Preço inválido!', techError: 'Erro no preenchimento do formulário.'})
+    return false
   }
+  return true
 }

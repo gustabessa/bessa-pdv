@@ -8,7 +8,7 @@ exports.check = (req, res) => {
   res.sendStatus(200);
 }
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
 
   const usuario = req.body.usuario;
   const senha = req.body.senha;
@@ -18,7 +18,7 @@ exports.login = async (req, res) => {
   .then(data => {
     user = data;
     if (!user) {
-      throw 'Usuário ou senha incorreta.'
+      next({messageError: 'Usuário ou senha incorreta.', techError: 'Erro de autenticação.'})
     }
     const senhaCorreta = bcrypt.compareSync(senha, user.senha);
     if (senhaCorreta) {
@@ -28,11 +28,15 @@ exports.login = async (req, res) => {
       res.setHeader('accesstoken', token)
       res.sendStatus(200);
     } else {
-      throw 'Usuário ou senha incorreta.'
+      next({messageError: 'Usuário ou senha incorreta.', techError: 'Erro de autenticação.'})
     }
   }).catch(err => {
-    return res.status(200).json({ messageError: err.toString(), hasError: true });
-  })
+    const errorResponse = {
+      messageError: 'Erro ao autenticar usuário.',
+      techError: err.toString()
+    }
+    next(errorResponse)
+  });
 }
 
 exports.logout = (req, res) => {

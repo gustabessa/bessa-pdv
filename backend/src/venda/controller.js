@@ -11,7 +11,9 @@ const PdfTable = require('voilab-pdf-table'),
 
 exports.create = (req, res, next) => {
 
-  this.validaVenda(req, req.body);
+  if (!this.validaVenda(req, req.body, next)) {
+    return
+  }
 
   const venda = {}
   venda.fk_venda_user = req.userId
@@ -26,16 +28,26 @@ exports.create = (req, res, next) => {
     association: ItemVenda.Venda
   }] })
   .then(data => {
-    this.printVenda(data, res)
+    if (data) {
+      this.printVenda(data, res)
+    } else {
+      next({messageError: 'Erro ao salvar venda.', techError: 'Database error'})
+    }
   })
   .catch(err => {
-    next(err);
+    const errorResponse = {
+      messageError: 'Erro ao salvar venda.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
 exports.update = (req, res, next) => {
 
-  this.validaVenda(req, req.body);
+  if (!this.validaVenda(req, req.body, next)) {
+    return
+  }
 
   const venda = {}
   const condicao = {
@@ -51,7 +63,11 @@ exports.update = (req, res, next) => {
     res.send(data)
   })
   .catch(err => {
-    next(err);
+    const errorResponse = {
+      messageError: 'Erro ao atualizar venda.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
@@ -59,7 +75,6 @@ exports.findAll = (req, res, next) => {
 
   let where = {}
   where.fk_venda_user = req.userId
-  console.log(req.query)
   if (req.query) {
     const q = req.query
     // Data de criação
@@ -103,29 +118,48 @@ exports.findAll = (req, res, next) => {
     as: 'itensVenda'
   }]})
   .then(data => {
-    res.send(data)
+    if (!data) {
+      next({messageError: 'Nenhuma venda encontrada.', techError: 'Nada encontrado.'})
+    } else {
+      res.send(data)
+    }
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao buscar todas as vendas.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
 exports.findOne = (req, res, next) => {
   const id = req.params.id;
 
-  Venda.findOne({where: {id: id}})
+  Venda.findOne({where: {id: id}, include: [{
+    association: ItemVenda.Venda,
+    as: 'itensVenda'
+  }]})
   .then(data => {
-    res.send(data)
+    if (!data) {
+      next({messageError: 'Venda não encontrada!', techError: 'Nada encontrado.'})
+    } else {
+      res.send(data)
+    }
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao buscar venda.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
 exports.destroy = (req, res, next) => {
 
   if (!req.body.id) {
-    next('Id deve ser diferente de nulo na exclusão.')
+    next({messageError: 'Id deve ser diferente de nulo na exclusão.', techError: 'null id'})
   }
 
   Venda.destroy({
@@ -137,17 +171,24 @@ exports.destroy = (req, res, next) => {
     res.send({'message': 'ok', 'affectedRows': affectedRows})
   })
   .catch(err => {
-    next(err)
+    const errorResponse = {
+      messageError: 'Erro ao excluir venda.',
+      techError: err.toString()
+    }
+    next(errorResponse)
   });
 }
 
-exports.validaVenda = (req, body) => {
+exports.validaVenda = (req, body, next) => {
   if (req.method !== 'POST' && !req.userId) {
-    throw 'Usuário inválido!'
+    next({messageError: 'Usuário inválido!', techError: 'Erro ao preencher dados da venda.'})
+    return false
   }
   if (!body.itensVenda || body.itensVenda.length === 0) {
-    throw 'Impossível criar venda sem itens.'
+    next({messageError: 'Impossível criar venda sem itens.', techError: 'Erro ao preencher dados da venda.'})
+    return false
   }
+  return true
 }
 
 exports.generateReport = (req, res, next) => {
@@ -159,11 +200,19 @@ exports.generateReport = (req, res, next) => {
       as: 'itensVenda'
   }]})
     .then(data => {
-      this.printVenda(data, res)
+      if (data) {
+        this.printVenda(data, res)
+      } else {
+        next({messageError: 'Erro ao buscar venda para impressão.', techError: 'Erro ao buscar.'})
+      }
     })
     .catch(err => {
-      next(err)
-    })
+      const errorResponse = {
+        messageError: 'Erro ao buscar venda para impressão.',
+        techError: err.toString()
+      }
+      next(errorResponse)
+    });
 }
 
 exports.printVenda = (data, res) => {
