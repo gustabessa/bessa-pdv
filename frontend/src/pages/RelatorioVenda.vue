@@ -46,7 +46,8 @@
           </div>
         </div>
         <div class="text-center">
-          <q-btn style="width: 30%;" class="btn-purple" label="Filtrar" :loading="loading" @click="filterFn" />
+          <q-btn style="width: 30%;" class="btn-purple q-mr-md" label="Filtrar" :loading="loading" @click="filterFn" />
+          <q-btn style="width: 30%;" class="btn-purple q-ml-md" label="Imprimir" :loading="loading" @click="generateReport" />
         </div>
       </q-card-section>
       <q-separator />
@@ -204,6 +205,30 @@ export default {
     }
   },
   methods: {
+    generateReport () {
+      if (this.selected[0]) {
+        httpUtil.doGet('/api/venda/report',
+          data => {
+            // window.location.assign(data)
+            // window.location.href = data
+            window.open(data)
+          },
+          err => {
+            console.error(err)
+            this.$q.notify({
+              type: 'negative',
+              message: 'Erro ao gerar relatório.',
+              timeout: 2000
+            })
+          }, { id: this.selected[0].id })
+      } else {
+        this.$q.notify({
+          type: 'negative',
+          message: 'Selecione uma venda para imprimir.',
+          timeout: 2000
+        })
+      }
+    },
     filterFn () {
       const filters = {
         precoFinal: this.precoFinal != null ? Number(this.precoFinal.replace(',', '.')) : null,

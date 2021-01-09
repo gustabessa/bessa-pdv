@@ -278,13 +278,14 @@ export default {
         itensVenda: this.itensVenda
       }
       const callback = {
-        onSuccess: () => {
+        onSuccess: data => {
           this.$q.notify({
             type: 'positive',
             message: 'Venda finalizada com sucesso!',
             timeout: 2000
           })
           this.loading = false
+          window.open(data)
           this.itensVenda = []
           this.cliente = null
         },

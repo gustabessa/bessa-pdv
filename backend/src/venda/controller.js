@@ -1,8 +1,13 @@
 const Venda = require('./model');
+const moment = require('moment');
+const { getRootPath } = require('../../index');
 const itemVendaController = require('../itemvenda/controller');
 const { Op } = require("sequelize");
 const db = require('../configs/sequelize');
 const ItemVenda = require('../itemvenda/model');
+const fs = require('fs')
+const PdfTable = require('voilab-pdf-table'),
+      PdfDocument = require('pdfkit');
 
 exports.create = (req, res, next) => {
 
@@ -21,7 +26,7 @@ exports.create = (req, res, next) => {
     association: ItemVenda.Venda
   }] })
   .then(data => {
-    res.send(data)
+    this.printVenda(data, res)
   })
   .catch(err => {
     next(err);
@@ -143,4 +148,154 @@ exports.validaVenda = (req, body) => {
   if (!body.itensVenda || body.itensVenda.length === 0) {
     throw 'Impossível criar venda sem itens.'
   }
+}
+
+exports.generateReport = (req, res, next) => {
+  const id = req.query.id;
+
+  Venda.findOne({where: {id: id}, 
+    include: [{
+      association: ItemVenda.Venda,
+      as: 'itensVenda'
+  }]})
+    .then(data => {
+      this.printVenda(data, res)
+    })
+    .catch(err => {
+      next(err)
+    })
+}
+
+exports.printVenda = (data, res) => {
+  var pdf = new PdfDocument({
+    autoFirstPage: false
+  }),
+  table = new PdfTable(pdf, {
+      bottomMargin: 30
+  });
+  const reportName = 'venda' + data.dataValues.id + '.'
+      + new Date().toISOString().replace(/:/g, '') + '.pdf'
+  const reportPath = getRootPath() + '/reports/' + reportName
+
+  pdf.pipe(fs.createWriteStream(reportPath));
+  
+
+  table
+  // add some plugins (here, a 'fit-to-width' for a column)
+  .addPlugin(new (require('voilab-pdf-table/plugins/fitcolumn'))({
+      column: 'nome'
+  }))
+  // set defaults to your columns
+  .setColumnsDefaults({
+      headerBorder: 'B',
+      align: 'right'
+  })
+  // add table columns
+  .addColumns([
+      {
+          id: 'nome',
+          header: 'Descrição',
+          align: 'left'
+      },
+      {
+          id: 'quantidade',
+          header: 'Quantidade',
+          width: 100
+      },
+      {
+          id: 'preco',
+          header: 'Preço Un. (R$)',
+          width: 100
+      },
+      {
+          id: 'precoTotal',
+          header: 'Preço Total (R$)',
+          width: 100
+      }
+  ])
+  // add events (here, we draw headers on each new page)
+  .onPageAdded(function (tb) {
+      tb.addHeader();
+  });
+
+  // if no page already exists in your PDF, do not forget to add one
+  pdf.addPage();
+  pdf.fontSize(25).text('Bessa PDV', 100, 20, {
+    width: 410,
+    align: 'center'
+  })
+  const cliente = data.dataValues.cliente ? data.dataValues.cliente : 'consumidor'
+  pdf.fontSize(12).text('Consumidor: ' + cliente, 71, 50, {
+    width: 410,
+    align: 'left'
+  })
+
+  const codVenda = data.dataValues.id
+  pdf.fontSize(12).text('Número Orçamento: ' + codVenda, 71, 50, {
+    width: 470,
+    align: 'right'
+  })
+
+  const dataVenda = moment.parseZone(data.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
+  pdf.text('Data do Orçamento: ' + dataVenda, 71, 65, {
+    width: 410,
+    align: 'left'
+  })
+  // espaço branco
+  pdf.text(' ', 71, 75, {
+    width: 410,
+    align: 'left'
+  })
+
+  const newArr = data.dataValues.itensVenda.map(itemVendaResp => {
+    const itemVenda = itemVendaResp.dataValues
+    const itemVO = {
+      nome: itemVenda.nome,
+      quantidade: itemVenda.quantidade,
+      preco: itemVenda.preco,
+      precoTotal: itemVenda.precoTotal
+    }
+    return itemVO
+  })
+
+  // Linha preta começo
+  pdf.save().moveTo(72, 86).lineTo(540, 86)
+  let altura = 330
+  if (newArr.length >= 16) {
+    altura = 690
+  }
+  pdf.save().moveTo(72, altura).lineTo(540, altura)
+  
+  // draw content, by passing data to the addBody method
+  // console.log(data.dataValues.itensVenda[0].dataValues)
+  // const arr = [data.dataValues.itensVenda[0].dataValues]
+  table.addBody(newArr);
+
+  let qtde = 0
+  newArr.forEach(itemVenda => {
+    qtde += Number(itemVenda.quantidade)
+  });
+  console.log(new Date().toISOString())
+  const dataImpressao = moment.parseZone(new Date()).format('DD/MM/YYYY HH:mm:ss')
+  console.log(dataImpressao)
+  pdf.text('Data de Impressão: ' + dataImpressao, 71, altura + 10, {
+    width: 410,
+    align: 'left'
+  })
+  pdf.text(newArr.length + (newArr.length == 1 ? ' produto' : ' produtos'), 320, altura + 10, {
+    width: 410,
+    align: 'left'
+  })
+  pdf.text(' / ' + qtde + (qtde == 1 ? ' item' : ' itens'), 390, altura + 10, {
+    width: 410,
+    align: 'left'
+  })
+  pdf.text('>> Total: ' + data.dataValues.subtotal, 71, altura + 10, {
+    width: 470,
+    align: 'right'
+  })
+
+  pdf.end();
+
+  res.send('http://127.0.0.1:8887/' + reportName)
 }

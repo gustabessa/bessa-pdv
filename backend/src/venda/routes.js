@@ -13,6 +13,9 @@ module.exports = (app) => {
   // Busca todos os vendas
   app.get('/venda', controller.findAll);
 
+  // Busca todos os vendas
+  app.get('/venda/report', controller.generateReport);
+
   app.use((error, req, res, next) => {
     return res.status(200).json({ messageError: error.toString(), hasError: true });
   });

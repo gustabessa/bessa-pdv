@@ -8,6 +8,10 @@ const ROOT_PATH = __dirname
 const publicPath = ['/auth', '/favicon.ico', '/login']
 const publicPost = ['/user']
 
+exports.getRootPath = () => {
+  return ROOT_PATH
+}
+
 app.use(bodyParser.json()) 
 app.use(bodyParser.urlencoded({extended: true})) 
 app.use(verifyJWT)
