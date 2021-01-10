@@ -77,6 +77,11 @@ exports.findAll = (req, res, next) => {
   where.fk_venda_user = req.userId
   if (req.query) {
     const q = req.query
+    // Se tem data final na query, colocar ao final do dia
+    // para pegar os pedidos do dia.
+    if (q.dataFinal) {
+      q.dataFinal = q.dataFinal + ' 23:59:59'
+    }
     // Data de criação
     if (q.dataInicial && q.dataFinal) {
       where.createdAt = {
@@ -324,9 +329,7 @@ exports.printVenda = (data, res) => {
   newArr.forEach(itemVenda => {
     qtde += Number(itemVenda.quantidade)
   });
-  console.log(new Date().toISOString())
   const dataImpressao = moment.parseZone(new Date()).format('DD/MM/YYYY HH:mm:ss')
-  console.log(dataImpressao)
   pdf.text('Data de Impressão: ' + dataImpressao, 71, altura + 10, {
     width: 410,
     align: 'left'

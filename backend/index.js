@@ -33,7 +33,7 @@ require('./src/autenticacao/routes')(app)
 function verifyJWT(req, res, next){
   if (!isPublicPath(req, req.url)) {
     const token = req.headers['accesstoken'];
-    if (!token || token === 'null' || token === 'undefined') return res.status(200).send({ auth: false, hasError: true, messageError: 'Acesso negado! Faça login.' });
+    if (!token || token === 'null' || token === 'undefined') return res.status(200).send({ auth: false, hasError: true, messageError: 'Acesso negado! Faça login.', techError: 'Acesso negado.' });
     
     jwt.verify(token, process.env.SECRET, function(err, decoded) {
       if (err) {

@@ -8,13 +8,22 @@ export default ({ router }) => {
   router.beforeEach((to, from, next) => {
     if (publicPath.indexOf(to.path) < 0) {
       httpUtil.doGet('/api/auth/check',
-        () => {
+        data => {
+          if (data && data.hasError) {
+            console.error(data.techError)
+            Notify.create({
+              type: 'negative',
+              message: data.messageError,
+              timeout: 2000
+            })
+          }
           checkTokenApi(to, from, next)
         },
         err => {
+          console.error(err.techError)
           Notify.create({
             type: 'negative',
-            message: err,
+            message: 'Falha na autenticação.',
             timeout: 2000
           })
           checkTokenApi(to, from, next)

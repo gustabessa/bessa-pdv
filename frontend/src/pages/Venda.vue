@@ -45,28 +45,34 @@
           <q-separator class="q-mb-md" />
           <div class="col-sm-5 q-pr-sm">
             <q-input
+              dense
               outlined
               label="Nome"
               v-model="nome"
+              @keyup.enter="adicionarItem"
               class="q-mb-md" />
           </div>
           <div class="col-sm-3 q-pl-sm q-pr-sm">
             <q-input
+              dense
               outlined
               label="Qtde."
               ref="quantidadeRef"
+              @keyup.enter="adicionarItem"
               v-model.number="quantidade"
               type="number"
               class="q-mb-md" />
           </div>
           <div class="col-sm-3 q-pl-sm q-pr-sm">
             <q-input
+              dense
               outlined
               label="Preço (R$)"
               v-model="preco"
               class="q-mb-md"
               mask="#,##"
               fill-mask="0"
+              @keyup.enter="adicionarItem"
               reverse-fill-mask />
           </div>
           <div class="col-sm-1">
@@ -355,7 +361,6 @@ export default {
             this.itensVenda = []
             this.cliente = null
           } else {
-            console.log()
             console.error(data.techError)
             this.$q.notify({
               type: 'negative',
@@ -391,6 +396,9 @@ export default {
       }, 200)
     },
     adicionarItem () {
+      if (typeof this.preco === 'string') {
+        this.preco = Number.parseFloat(this.preco.replace(',', '.')).toFixed(2)
+      }
       this.itensVenda.push({
         nome: this.nome,
         fk_itemvenda_produto: this.id,
@@ -414,7 +422,6 @@ export default {
         row.preco = Number.parseFloat(row.preco.replace(',', '.')).toFixed(2)
       }
       row.precoTotal = Number.parseFloat(qtde) * Number.parseFloat(row.preco)
-      console.log(row)
     },
     getPrecoTotal () {
       this.quantidade = Number.parseFloat(this.quantidade)
