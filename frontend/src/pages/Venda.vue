@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <q-card class="venda-card q-mt-md q-mb-md">
-      <q-card-section class="card-header">
+      <q-card-section :class="theme" class="card-header">
         Venda
         <div class="float-right">
           <q-btn
@@ -21,6 +21,7 @@
           label="Cliente"
           v-model="cliente"
           class="q-mb-md"
+          :color='themeInput'
           dense />
         <q-input
           outlined
@@ -29,6 +30,7 @@
           @input="filterFn"
           @keyup.enter="filterFn"
           label="Produto"
+          :color='themeInput'
           hint="Busque pelo nome do produto"
           style="padding-bottom: 32px"
           dense
@@ -37,25 +39,27 @@
             <q-icon
               class="cursor-pointer"
               name="search"
-              style="color: purple;"
+              :style="themeText"
             />
           </template>
         </q-input>
         <div v-if="produtoSelecionado" class="row">
           <q-separator class="q-mb-md" />
-          <div class="col-sm-5 q-pr-sm">
+          <div class="col-xs-12 col-sm-5 q-pr-sm">
             <q-input
               dense
               outlined
               label="Nome"
+              :color='themeInput'
               v-model="nome"
               @keyup.enter="adicionarItem"
               class="q-mb-md" />
           </div>
-          <div class="col-sm-3 q-pl-sm q-pr-sm">
+          <div class="col-xs-5 col-sm-3 q-pl-sm q-pr-sm">
             <q-input
               dense
               outlined
+              :color='themeInput'
               label="Qtde."
               ref="quantidadeRef"
               @keyup.enter="adicionarItem"
@@ -63,10 +67,11 @@
               type="number"
               class="q-mb-md" />
           </div>
-          <div class="col-sm-3 q-pl-sm q-pr-sm">
+          <div class="col-xs-6 col-sm-3 q-pl-sm q-pr-sm">
             <q-input
               dense
               outlined
+              :color='themeInput'
               label="Preço (R$)"
               v-model="preco"
               class="q-mb-md"
@@ -75,12 +80,14 @@
               @keyup.enter="adicionarItem"
               reverse-fill-mask />
           </div>
-          <div class="col-sm-1">
+          <div class="col-1">
             <q-btn
+            dense
             icon="add"
             @click="adicionarItem"
+            :class="theme"
             class="q-mb-md btn-purple"
-            style="width: 100%; height: 56px;"
+            style="width: 100%; height: 39px;"
           />
           </div>
           <q-separator class="q-mb-md" />
@@ -124,7 +131,7 @@
             >
               <template v-slot:header="props">
                 <q-tr :props="props">
-                  <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                  <q-th :class="theme" v-for="col in props.cols" :key="col.name" :props="props">
                     {{ col.label }}
                   </q-th>
                 </q-tr>
@@ -144,15 +151,15 @@
                   <q-td key="preco" :props="props">
                     {{ formataDinheiro(props.row.preco) }}
                     <q-popup-edit v-model="props.row.preco">
-                      <q-input v-model="props.row.preco" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco)" dense autofocus mask="#,##"
+                      <q-input ref="refPreco" v-model="props.row.preco" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco)" dense autofocus mask="#,##"
                         fill-mask="0"
                         reverse-fill-mask />
                     </q-popup-edit>
                   </q-td>
-                  <q-td key="quantidade" :props="props">
+                  <q-td key="quantidade" @click="selectQuantidade" :props="props">
                     {{ props.row.quantidade }}
                     <q-popup-edit v-model="props.row.quantidade">
-                      <q-input type="number" v-model.number="props.row.quantidade" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco, )" dense autofocus />
+                      <q-input ref="refQuantidade" type="number" v-model.number="props.row.quantidade" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco, )" dense autofocus />
                     </q-popup-edit>
                   </q-td>
                   <q-td key="precoTotal" :props="props">
@@ -163,8 +170,8 @@
             </q-table>
           </div>
         </template>
-        <q-btn style="width: 175px;" class="btn-purple float-right q-mt-sm q-ml-sm q-mb-sm" label="Finalizar Venda" :loading="loading" @click="finalizarVenda" />
-        <div class="float-right text-h5 text-purple q-ma-sm">
+        <q-btn style="width: 175px;" :class="theme" class="btn-purple float-right q-mt-sm q-ml-sm q-mb-sm" label="Finalizar Venda" :loading="loading" @click="finalizarVenda" />
+        <div :style="themeText" class="float-right text-h5 q-ma-sm">
           Subtotal: {{ formataDinheiro(getSubtotal()) }}
         </div>
       </q-card-section>
@@ -175,6 +182,9 @@
 <script>
 import httpUtil from '../components/util/HttpUtil'
 import dialog from '../components/util/DialogUtil'
+import ConfirmacaoVenda from '../components/ConfirmacaoVenda'
+import themeUtil from '../components/util/ThemeUtil'
+import scss from '../css/quasar.variables.json'
 export default {
   name: 'Venda',
   data () {
@@ -245,6 +255,11 @@ export default {
     }
   },
   methods: {
+    selectQuantidade () {
+      setTimeout(() => {
+        this.$refs.refQuantidade.select()
+      }, 200)
+    },
     importarVenda () {
       this.loading = true
       const callback = {
@@ -296,7 +311,7 @@ export default {
       this.selected = [row]
     },
     formataDinheiro (val) {
-      return `R$ ${Number.parseFloat(val).toFixed(2)}`.replace(',', '.').replace('.', ',')
+      return `R$ ${Number(val).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')}`
     },
     filterFn () {
       httpUtil.doGet('/api/produto',
@@ -344,11 +359,6 @@ export default {
     },
     finalizarVenda () {
       this.loading = true
-      const venda = {
-        cliente: this.cliente,
-        subtotal: this.getSubtotal(),
-        itensVenda: this.itensVenda
-      }
       const callback = {
         onSuccess: data => {
           if (data && !data.hasError) {
@@ -380,8 +390,24 @@ export default {
           this.loading = false
         }
       }
-      dialog.confirm('Deseja finalizar a venda?')
-        .onOk(() => httpUtil.doPost('/api/venda', venda, callback.onSuccess, callback.onError))
+      const vendaSubtotal = this.getSubtotal()
+      this.$q.dialog({
+        component: ConfirmacaoVenda,
+        parent: this,
+        subtotal: vendaSubtotal.toFixed(2)
+      })
+        .onOk(valores => {
+          const venda = {
+            cliente: this.cliente,
+            subtotal: this.getSubtotal(),
+            itensVenda: this.itensVenda,
+            total: valores.vlrTotal,
+            desconto: valores.vlrDesconto,
+            frete: valores.vlrFrete,
+            qtdeFrete: valores.qtdeFrete
+          }
+          httpUtil.doPost('/api/venda', venda, callback.onSuccess, callback.onError)
+        })
         .onCancel(() => { this.loading = false })
     },
     escolherProduto (evt, row, index) {
@@ -396,26 +422,34 @@ export default {
       }, 200)
     },
     adicionarItem () {
-      if (typeof this.preco === 'string') {
-        this.preco = Number.parseFloat(this.preco.replace(',', '.')).toFixed(2)
+      if (this.quantidade > 0) {
+        if (typeof this.preco === 'string') {
+          this.preco = Number.parseFloat(this.preco.replace(',', '.')).toFixed(2)
+        }
+        this.itensVenda.push({
+          nome: this.nome,
+          fk_itemvenda_produto: this.id,
+          preco: this.preco,
+          quantidade: this.quantidade,
+          precoTotal: this.getPrecoTotal()
+        })
+        let item = 1
+        this.itensVenda.forEach(itemVenda => {
+          itemVenda.item = item
+          item++
+        })
+        this.produtoSelecionado = false
+        this.id = null
+        this.nome = null
+        this.preco = null
+        this.quantidade = null
+      } else {
+        this.$q.notify({
+          type: 'negative',
+          message: 'Insira uma quantidade maior que 0!',
+          timeout: 2000
+        })
       }
-      this.itensVenda.push({
-        nome: this.nome,
-        fk_itemvenda_produto: this.id,
-        preco: this.preco,
-        quantidade: this.quantidade,
-        precoTotal: this.getPrecoTotal()
-      })
-      let item = 1
-      this.itensVenda.forEach(itemVenda => {
-        itemVenda.item = item
-        item++
-      })
-      this.produtoSelecionado = false
-      this.id = null
-      this.nome = null
-      this.preco = null
-      this.quantidade = null
     },
     atualizaPrecoTotal (row, qtde, preco) {
       if (typeof row.preco === 'string') {
@@ -489,6 +523,17 @@ export default {
     }
   },
   computed: {
+    theme () {
+      return themeUtil.getTheme(this.$store)
+    },
+    themeText () {
+      return {
+        color: scss[themeUtil.getTheme(this.$store)]
+      }
+    },
+    themeInput () {
+      return scss[themeUtil.getTheme(this.$store)]
+    },
     rowsPerPageOptions () {
       return [100]
     },
@@ -500,7 +545,7 @@ export default {
   }
 }
 </script>
-<style>
+<style lang="scss">
 
   .my-sticky-header-table {
     height: auto;
@@ -524,8 +569,14 @@ export default {
   }
   thead tr:first-child th {
     top: 0;
-    background-color: purple;
-    color: white;
+    background-color: $primary;
+    color: $text-color;
+  }
+
+  .secondary {
+    top: 0;
+    background-color: $secondary !important;
+    color: $text-color;
   }
 
   .produtosTable div thead tr th {
@@ -536,5 +587,14 @@ export default {
   .q-table--loading thead tr:last-child th {
     /* height of all previous header rows */
     top: 48px;
+  }
+
+  @media screen and (max-width: 599px) {
+    .col-xs-12.q-pr-sm {
+      padding-right: 0;
+    }
+    .col-xs-12.q-pl-sm, .col-xs-5.q-pl-sm {
+      padding-left: 0;
+    }
   }
 </style>

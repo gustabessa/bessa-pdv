@@ -1,11 +1,52 @@
 .btn-purple {
   background-color: $primary;
-  color: white;
+  color: $text-color
+}
+
+.btn-purple-inverse {
+  background-color: $text-color;
+  color: $primary;
+}
+
+.default-inverse {
+  color: $default !important;
+  background-color: white;
+}
+
+.theme2-inverse {
+  color: $theme2 !important;
+  background-color: white;
+}
+
+.theme3-inverse {
+  color: $theme3 !important;
+  background-color: white;
+}
+
+.theme4-inverse {
+  color: $theme4 !important;
+  background-color: white;
+}
+
+.default {
+  background-color: $default !important;
+}
+
+.theme2 {
+  background-color: $theme2 !important;
+}
+
+.theme3 {
+  background-color: $theme3 !important;
+}
+
+.theme4 {
+  background-color: $theme4 !important;
 }
 
 .card-header {
   background-color: $primary;
-  color: white;
+  color: $text-color;
   font-weight: 700;
   font-size: 20px;
   // width: 100%;
@@ -24,8 +65,8 @@
 }
 
 .btn-purple-inverse {
-  background-color: white;
-  color: purple;
+  background-color: $text-color;
+  color: $primary;
 }
 
 .my-focused-table {
@@ -33,12 +74,15 @@
   outline: 0;
 }
 
-body {
-  background-color: $background;
-}
-
 .text-primary {
   color: $primary;
+}
+
+
+@media screen and (max-width: 599px) {
+  .col-xs-12.q-pr-sm {
+    padding-right: 0;
+  }
 }
 
 @media screen and (max-width: 370px) {

@@ -6,23 +6,24 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-input outlined v-model="nomeEmpresa" label="Nome da Empresa" />
-          <q-input outlined v-model="usuario" class="q-mt-md" label="Usuário" />
-          <q-input outlined v-model="senha" class="q-mt-md" label="Senha" :type="isPwd ? 'password' : 'text'">
+          <q-input :color='themeInput' outlined v-model="nomeEmpresa" label="Nome da Empresa" />
+          <q-input :color='themeInput' outlined v-model="usuario" class="q-mt-md" label="Usuário" />
+          <q-input :color='themeInput' outlined v-model="senha" class="q-mt-md" label="Senha" :type="isPwd ? 'password' : 'text'">
             <template v-slot:append>
               <q-icon
                 :name="isPwd ? 'visibility_off' : 'visibility'"
                 class="cursor-pointer"
+                :style="themeText"
                 @click="isPwd = !isPwd"
               />
             </template>
           </q-input>
-          <q-input outlined v-model="email" class="q-mt-md" label="Email" />
+          <q-input :color='themeInput' outlined v-model="email" class="q-mt-md" label="Email" />
         </q-card-section>
 
-        <q-card-actions align="center" class="text-primary">
-          <q-btn style="width: 40%;" outline class="btn-purple-inverse" label="Limpar" @click="limparCampos()" />
-          <q-btn style="width: 40%;" class="btn-purple" label="Salvar" :loading="loading" @click="criarUsuario()" />
+        <q-card-actions align="center">
+          <q-btn style="width: 40%;" outline :class="themeInverse" label="Limpar" @click="limparCampos()" />
+          <q-btn :class="theme" class="text-white" style="width: 40%;" label="Salvar" :loading="loading" @click="criarUsuario()" />
         </q-card-actions>
       </q-card>
   </q-page>
@@ -30,7 +31,8 @@
 
 <script>
 import httpUtil from '../components/util/HttpUtil'
-
+import themeUtil from '../components/util/ThemeUtil'
+import scss from '../css/quasar.variables.json'
 export default {
   data () {
     return {
@@ -86,6 +88,22 @@ export default {
           this.loading = false
         }
       )
+    }
+  },
+  computed: {
+    theme () {
+      return themeUtil.getTheme(this.$store)
+    },
+    themeText () {
+      return {
+        color: scss[themeUtil.getTheme(this.$store)]
+      }
+    },
+    themeInput () {
+      return scss[themeUtil.getTheme(this.$store)]
+    },
+    themeInverse () {
+      return themeUtil.getThemeInverse(this.$store)
     }
   }
 }

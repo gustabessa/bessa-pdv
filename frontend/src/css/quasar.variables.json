@@ -1,0 +1,29 @@
+{
+  "default"    :"purple",
+  "theme2"     :"green",
+  "theme3"     :"black",
+  "theme4"     :"orange",
+
+  "background-default" : "#ffe3ff",
+  "background-theme2"  : "lightgreen",
+  "background-theme3"  : "gray",
+  "background-theme4"  : "#f7a076",
+
+  "menu-default"     : "#591a59",
+  "menu-theme2"      : "#005900",
+  "menu-theme3"      : "black",
+  "menu-theme4"      : "#bb3d00",
+
+  "primary"    :"purple",
+  "secondary"  :"#26A69A",
+  "accent"     :"#9C27B0",
+
+  "dark"       :"#1D1D1D",
+
+  "positive"   :"#21BA45",
+  "negative"   :"#C10015",
+  "info"       :"#31CCEC",
+  "warning"    :"#F2C037",
+  "background" :"#ffe3ff",
+  "text-color" :"white"
+}

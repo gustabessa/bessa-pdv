@@ -7,6 +7,9 @@ const { Model, DataTypes } = db.Sequelize;
 class ItemVenda extends Model {}
 
 ItemVenda.init({
+  item: {
+    type: DataTypes.INTEGER
+  },
   quantidade: {
     type: DataTypes.DECIMAL(10,2)
   },

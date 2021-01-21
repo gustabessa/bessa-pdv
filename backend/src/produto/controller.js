@@ -12,6 +12,7 @@ exports.create = (req, res, next) => {
   produto.fk_produto_user = req.userId
   produto.nome = req.body.nome
   produto.preco = req.body.preco
+  produto.precoCusto = req.body.precoCusto
 
   Produto.create(produto)
   .then(data => {
@@ -38,6 +39,7 @@ exports.update = (req, res, next) => {
   }
   produto.nome = req.body.nome
   produto.preco = req.body.preco
+  produto.precoCusto = req.body.precoCusto
 
   condicao.where.id = req.body.id
 
@@ -67,7 +69,7 @@ exports.findAll = (req, res, next) => {
     }
   }
 
-  Produto.findAll({where: where})
+  Produto.findAll({where: where, order: [['nome', 'ASC']]})
   .then(data => {
     if (data) {
       res.send(data)

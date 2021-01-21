@@ -38,7 +38,7 @@ function verifyJWT(req, res, next){
     jwt.verify(token, process.env.SECRET, function(err, decoded) {
       if (err) {
         res.setHeader('accesstoken', null)
-        return res.status(200).send({ auth: false, accesstoken: null, hasError: true, messageError: 'Seção encerrada! Por favor, faça login novamente.' });
+        return res.status(200).send({ auth: false, accesstoken: null, hasError: true, messageError: 'Seção encerrada! Por favor, faça login novamente.', techError: 'Sessão encerrada.' });
       } 
       
       // se tudo estiver ok, salva no request para uso posterior

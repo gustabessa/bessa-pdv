@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar>
+      <q-toolbar :class="theme">
         <q-btn
           flat
           dense
@@ -23,7 +23,16 @@
           Bessa PDV
         </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div>
+        <q-btn
+          flat
+          dense
+          round
+          icon="palette"
+          @click="escolheTema()"
+        />
+
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -31,12 +40,12 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
-      content-class="bg-grey-1"
+      :content-style="menuStyle"
     >
       <q-list>
         <q-item-label
           header
-          class="text-grey-8"
+          class="menu-header"
         >
           Páginas
         </q-item-label>
@@ -48,7 +57,7 @@
       </q-list>
     </q-drawer>
 
-    <q-page-container>
+    <q-page-container :style="pageBackground">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -56,40 +65,32 @@
 
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
-
+import themeUtil from '../components/util/ThemeUtil'
+import scss from '../css/quasar.variables.json'
 const linksData = [
   {
     title: 'Home',
-    // caption: 'quasar.dev',
-    // icon: 'school',
     link: '/'
   },
   {
     title: 'Login',
-    // caption: 'quasar.dev',
-    // icon: 'school',
     link: '/login'
   },
   {
     title: 'Produtos',
-    // caption: 'quasar.dev',
-    // icon: 'school',
     link: '/produtos'
   },
   {
     title: 'Venda',
-    // caption: 'quasar.dev',
-    // icon: 'school',
     link: '/venda'
   },
   {
     title: 'Relatório de Vendas',
-    // caption: 'quasar.dev',
-    // icon: 'school',
     link: '/relatorio-venda'
   }
 ]
 import httpUtil from '../components/util/HttpUtil'
+import EscolhaTema from '../components/EscolhaTema'
 
 export default {
   name: 'MainLayout',
@@ -120,6 +121,38 @@ export default {
             timeout: 2000
           })
         })
+    },
+    escolheTema () {
+      this.$q.dialog({
+        component: EscolhaTema,
+        parent: this
+      })
+    }
+  },
+  computed: {
+    theme () {
+      return themeUtil.getTheme(this.$store)
+    },
+    themeText () {
+      return {
+        color: scss[themeUtil.getTheme(this.$store)]
+      }
+    },
+    themeInput () {
+      return scss[themeUtil.getTheme(this.$store)]
+    },
+    menuStyle () {
+      return {
+        background: scss['menu-' + themeUtil.getTheme(this.$store)],
+        'border-right-color': scss['menu-' + themeUtil.getTheme(this.$store)],
+        backgroundColor: scss['menu-' + themeUtil.getTheme(this.$store)],
+        color: scss['text-color']
+      }
+    },
+    pageBackground () {
+      return {
+        backgroundColor: scss['background-' + themeUtil.getTheme(this.$store)]
+      }
     }
   },
   beforeUpdate () {
@@ -128,3 +161,10 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+  .menu-header {
+    color: $text-color;
+    font-weight: 700;
+    font-size: 20px;
+  }
+</style>

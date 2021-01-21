@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <q-card class="produtos-card q-mt-md q-mb-md">
-      <q-card-section class="card-header">
+      <q-card-section :class="theme" class="card-header">
         Cadastro de Produtos
         <div class="float-right">
           <q-btn
@@ -31,13 +31,14 @@
           @keyup.enter="filterFn"
           hint="Busque pelo nome do produto"
           style="padding-bottom: 32px"
+          :color='themeInput'
           dense
         >
           <template v-slot:append>
             <q-icon
               class="cursor-pointer"
               name="search"
-              style="color: purple;"
+              :style="themeText"
             />
           </template>
         </q-input>
@@ -53,20 +54,43 @@
               hide-bottom
               @row-click="escolherProduto"
               :rows-per-page-options="rowsPerPageOptions"
-            />
+            >
+              <template v-slot:header="props">
+                <q-tr :props="props">
+                  <q-th :class="theme" v-for="col in props.cols" :key="col.name" :props="props">
+                    {{ col.label }}
+                  </q-th>
+                </q-tr>
+              </template>
+            </q-table>
           </div>
         </template>
 
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-input dense outlined v-model="id" class="q-mb-md" label="Id" readonly />
-        <q-input dense outlined v-model="nome" class="q-mb-md" label="Nome" ref="nomeProduto"/>
-        <q-input dense outlined v-model="preco" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço" />
+        <div class="row">
+          <div class="col-12">
+            <q-input :color='themeInput' dense outlined v-model="id" class="q-mb-md" label="Id" readonly />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <q-input :color='themeInput' dense outlined v-model="nome" class="q-mb-md" label="Nome" ref="nomeProduto"/>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-12 col-sm-6 q-pr-sm">
+            <q-input :color='themeInput' dense outlined v-model="precoCusto" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Custo" />
+          </div>
+          <div class="col-xs-12 col-sm-6">
+            <q-input :color='themeInput' dense outlined v-model="preco" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Venda" />
+          </div>
+        </div>
       </q-card-section>
-      <q-card-actions align="center" class="text-primary">
+      <q-card-actions align="center">
         <!-- <q-btn style="width: 40%;" outline class="btn-purple-inverse" label="Limpar" @click="limparCampos()" /> -->
-        <q-btn style="width: 40%;" class="btn-purple" label="Salvar" :loading="loading" @click="criarProduto()" />
+        <q-btn :class="theme" style="width: 40%;" class="text-white" label="Salvar" :loading="loading" @click="criarProduto()" />
       </q-card-actions>
     </q-card>
   </q-page>
@@ -75,6 +99,8 @@
 <script>
 import httpUtil from '../components/util/HttpUtil'
 import dialog from '../components/util/DialogUtil'
+import themeUtil from '../components/util/ThemeUtil'
+import scss from '../css/quasar.variables.json'
 export default {
   name: 'Produtos',
   data () {
@@ -107,6 +133,7 @@ export default {
       id: null,
       nome: '',
       preco: null,
+      precoCusto: null,
       table: false
     }
   },
@@ -151,6 +178,7 @@ export default {
       this.id = row.id
       this.nome = row.nome
       this.preco = row.preco
+      this.precoCusto = row.precoCusto
     },
     printModel () {
       console.log(this.model)
@@ -167,7 +195,8 @@ export default {
         const produto = {
           id: this.id,
           nome: this.nome,
-          preco: this.preco.replace('.', '').replace(',', '.')
+          preco: this.preco.replace('.', '').replace(',', '.'),
+          precoCusto: this.precoCusto ? this.precoCusto.replace('.', '').replace(',', '.') : null
         }
         const callback = {
           onSuccess: data => {
@@ -253,13 +282,24 @@ export default {
     }
   },
   computed: {
+    theme () {
+      return themeUtil.getTheme(this.$store)
+    },
+    themeText () {
+      return {
+        color: scss[themeUtil.getTheme(this.$store)]
+      }
+    },
+    themeInput () {
+      return scss[themeUtil.getTheme(this.$store)]
+    },
     rowsPerPageOptions () {
       return [100]
     }
   }
 }
 </script>
-<style>
+<style lang="scss">
 
   .my-sticky-header-table {
     height: auto;
@@ -279,8 +319,8 @@ export default {
   }
   thead tr:first-child th {
     top: 0;
-    background-color: purple;
-    color: white;
+    background-color: $primary;
+    color: $text-color;
   }
 
   /* this is when the loading indicator appears */

@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import bessaPdv from './bessaPdv'
+import themes from './themes'
+import createPersistedState from 'vuex-persistedstate'
 
 // import example from './module-example'
 
@@ -18,10 +20,11 @@ Vue.use(Vuex)
 export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     modules: {
-      bessaPdv
+      bessaPdv,
+      themes
       // example
     },
-
+    plugins: [createPersistedState()],
     // enable strict mode (adds overhead!)
     // for dev mode and --debug builds only
     strict: process.env.DEBUGGING

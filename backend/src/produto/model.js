@@ -14,6 +14,9 @@ Produto.init({
     allowNull: false,
     type: DataTypes.DECIMAL(10,2)
   },
+  precoCusto: {
+    type: DataTypes.DECIMAL(10,2)
+  },
 }, {sequelize, modelName: "produtos"})
 
 Produto.User = User.hasMany(Produto, {

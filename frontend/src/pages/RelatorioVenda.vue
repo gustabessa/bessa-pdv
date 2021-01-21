@@ -1,47 +1,51 @@
 <template>
   <q-page class="flex flex-center">
     <q-card class="produtos-card q-mt-md q-mb-md">
-      <q-card-section class="card-header">
+      <q-card-section :class="theme" class="card-header">
         Relatório de Vendas
       </q-card-section>
       <q-separator />
       <q-card-section>
         Filtros
         <div class="row">
-          <div class="col-sm-3">
+          <div class="col-xs-12 col-sm-3 q-pr-sm">
             <q-input
               dense
+              :color='themeInput'
               outlined
               label="Preço Inicial (R$)"
               v-model="precoInicial"
-              class="q-mb-md q-pr-sm"
+              class="q-mb-md"
               mask="#,##"
               fill-mask="0"
               reverse-fill-mask />
           </div>
-          <div class="col-sm-3">
+          <div class="col-xs-12 col-sm-3 q-pr-sm">
             <q-input
               dense
+              :color='themeInput'
               outlined
               label="Preço Final (R$)"
               v-model="precoFinal"
-              class="q-mb-md q-pr-sm"
+              class="q-mb-md"
               mask="#,##"
               fill-mask="0"
               reverse-fill-mask />
           </div>
-          <div class="col-sm-3">
+          <div class="col-xs-12 col-sm-3 q-pr-sm">
             <q-input
               dense
+              :color='themeInput'
               outlined
               label="Data Inicial"
               v-model="dataInicial"
-              class="q-mb-md q-pr-sm"
+              class="q-mb-md"
               type="date" />
           </div>
-          <div class="col-sm-3">
+          <div class="col-xs-12 col-sm-3">
             <q-input
               dense
+              :color='themeInput'
               outlined
               label="Data Final"
               v-model="dataFinal"
@@ -50,8 +54,8 @@
           </div>
         </div>
         <div class="text-center">
-          <q-btn style="width: 30%;" class="btn-purple q-mr-md" label="Filtrar" :loading="loading" @click="filterFn" />
-          <q-btn style="width: 30%;" class="btn-purple q-ml-md" label="Imprimir" :loading="loading" @click="generateReport" />
+          <q-btn :class="theme" style="width: 30%;" class="text-white q-mr-md" label="Filtrar" :loading="loading" @click="filterFn" />
+          <q-btn :class="theme" style="width: 30%;" class="text-white q-ml-md" label="Imprimir" :loading="loading" @click="generateReport" />
         </div>
       </q-card-section>
       <q-separator />
@@ -79,7 +83,7 @@
             >
              <template v-slot:header="props">
                 <q-tr :props="props">
-                  <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                  <q-th :class="theme" v-for="col in props.cols" :key="col.name" :props="props">
                     {{ col.label }}
                   </q-th>
                 </q-tr>
@@ -111,7 +115,15 @@
               separator="cell"
               hide-bottom
               :rows-per-page-options="rowsPerPageOptions"
-            />
+            >
+              <template v-slot:header="props">
+                <q-tr :props="props">
+                  <q-th :class="theme" v-for="col in props.cols" :key="col.name" :props="props">
+                    {{ col.label }}
+                  </q-th>
+                </q-tr>
+              </template>
+            </q-table>
           </div>
         </template>
       </q-card-section>
@@ -121,6 +133,8 @@
 
 <script>
 import httpUtil from '../components/util/HttpUtil'
+import themeUtil from '../components/util/ThemeUtil'
+import scss from '../css/quasar.variables.json'
 export default {
   name: 'RelatorioVendas',
   data () {
@@ -140,11 +154,32 @@ export default {
           field: row => row.cliente != null ? row.cliente : 'Consumidor'
         },
         {
-          name: 'preco',
+          name: 'subtotal',
           align: 'left',
           label: 'Subtotal (R$)',
           field: row => row.subtotal,
-          format: val => `R$ ${Number.parseFloat(val).toFixed(2)}`.replace(',', '.').replace('.', ',')
+          format: val => this.formataDinheiro(val)
+        },
+        {
+          name: 'frete',
+          align: 'left',
+          label: 'Frete (R$)',
+          field: row => row.frete,
+          format: val => this.formataDinheiro(val)
+        },
+        {
+          name: 'desconto',
+          align: 'left',
+          label: 'Desconto (R$)',
+          field: row => row.desconto,
+          format: val => this.formataDinheiro(val)
+        },
+        {
+          name: 'total',
+          align: 'left',
+          label: 'Total (R$)',
+          field: row => row.total,
+          format: val => this.formataDinheiro(val)
         },
         {
           name: 'data',
@@ -163,7 +198,7 @@ export default {
           required: true,
           label: 'Cod.',
           align: 'left',
-          field: row => row.id
+          field: row => row.fk_itemvenda_produto
         },
         {
           name: 'nome',
@@ -176,7 +211,7 @@ export default {
           align: 'left',
           label: 'Preço Un. (R$)',
           field: row => row.preco,
-          format: val => `R$ ${Number.parseFloat(val).toFixed(2)}`.replace(',', '.').replace('.', ',')
+          format: val => this.formataDinheiro(val)
         },
         {
           name: 'quantidade',
@@ -189,7 +224,7 @@ export default {
           align: 'left',
           label: 'Preço Total (R$)',
           field: row => row.precoTotal,
-          format: val => `R$ ${Number.parseFloat(val).toFixed(2)}`.replace(',', '.').replace('.', ',')
+          format: val => this.formataDinheiro(val)
         }
       ],
       focused: false,
@@ -209,6 +244,9 @@ export default {
     }
   },
   methods: {
+    formataDinheiro (val) {
+      return `R$ ${Number(val).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')}`
+    },
     generateReport () {
       if (this.selected[0]) {
         httpUtil.doGet('/api/venda/report/history',
@@ -335,6 +373,17 @@ export default {
     }
   },
   computed: {
+    theme () {
+      return themeUtil.getTheme(this.$store)
+    },
+    themeText () {
+      return {
+        color: scss[themeUtil.getTheme(this.$store)]
+      }
+    },
+    themeInput () {
+      return scss[themeUtil.getTheme(this.$store)]
+    },
     rowsPerPageOptions () {
       return [this.data.length]
     },
@@ -349,7 +398,7 @@ export default {
   }
 }
 </script>
-<style>
+<style lang="scss">
 
   .my-sticky-header-table {
     height: auto;
@@ -369,8 +418,8 @@ export default {
   }
   thead tr:first-child th {
     top: 0;
-    background-color: purple;
-    color: white;
+    background-color: $primary;
+    color: $text-color;
   }
 
   /* this is when the loading indicator appears */
@@ -378,4 +427,5 @@ export default {
     /* height of all previous header rows */
     top: 48px;
   }
+
 </style>

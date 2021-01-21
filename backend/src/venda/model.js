@@ -6,6 +6,9 @@ const { Model, DataTypes } = db.Sequelize;
 class Venda extends Model {}
 
 Venda.init({
+  qtdeFrete: {
+    type: DataTypes.INTEGER
+  },
   total: {
     type: DataTypes.DECIMAL(10,2)
   },

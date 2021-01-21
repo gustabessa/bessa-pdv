@@ -11,7 +11,7 @@ export default {
   },
   prompt (msg) {
     return Dialog.create({
-      message: msg,
+      title: msg,
       cancel: true,
       prompt: {
         model: '',
