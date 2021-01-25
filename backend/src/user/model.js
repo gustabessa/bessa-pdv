@@ -7,6 +7,7 @@ class User extends Model {}
 User.init({
   usuario: {
     allowNull: false,
+    unique: true,
     type: DataTypes.STRING(100)
   }, 
   senha: {
@@ -21,6 +22,6 @@ User.init({
     allowNull: true,
     type: DataTypes.STRING(100)
   }, 
-}, {sequelize, modelName: "users"})
+}, {sequelize, modelName: 'users'})
 
 module.exports = User

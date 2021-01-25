@@ -31,9 +31,16 @@ exports.create = (req, res, next) => {
     res.send(data)
   })
   .catch(err => {
+    let msg
+    errString = err.toString()
+    if (errString.split(':')[0] === 'SequelizeUniqueConstraintError') {
+      msg = 'Usuário já está em uso.'
+    } else {
+      msg = 'Erro ao criar usuário.'
+    }
     const errorResponse = {
-      messageError: 'Erro ao criar usuário.',
-      techError: err.toString()
+      messageError: msg,
+      techError: errString
     }
     next(errorResponse)
   });
