@@ -147,9 +147,11 @@ exports.findAll = (req, res, next) => {
 }
 
 exports.findOne = (req, res, next) => {
-  const id = req.params.id;
+  let where = {}
+  where.fk_venda_user = req.userId
+  where.id = req.params.id;
 
-  Venda.findOne({where: {id: id}, include: [{
+  Venda.findOne({where: where, include: [{
     association: ItemVenda.Venda,
     as: 'itensVenda',
     order: [['item', 'ASC']]
@@ -247,23 +249,17 @@ exports.printVenda = (data) => {
       ]
       return itemVO
     })
-    // while (newArr.length < 11) {
-    //   newArr.push([...newArr[0]])
-    // }
+
     while (newArr.length < 11) {
       newArr.push(['\n', '', '', ''])
     }
 
-
-    
-    
     newArr.unshift([
       { text: 'Descrição', style: 'tableHeader' }, 
       { text: 'Quantidade', style: 'tableHeader' }, 
       { text: 'Preço Un. (R$)', style: 'tableHeader' },
       { text: 'Preço Total (R$)', style: 'tableHeader' }
     ])
-    // margin: [0, 20, 0, 8]
     const cliente = data.dataValues.cliente ? data.dataValues.cliente : 'consumidor'
     const codVenda = data.dataValues.id
     const dataVenda = moment.parseZone(data.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
@@ -337,235 +333,3 @@ exports.printVenda = (data) => {
 function formataDinheiro(val) {
   return Number(val).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
 }
-// exports.printVenda = (data, res) => {
-//   var pdf = new PdfDocument({
-//     autoFirstPage: false
-//   }),
-//   table = new PdfTable(pdf, {
-//       bottomMargin: 30
-//   });
-//   const reportName = 'venda' + data.dataValues.id + '.'
-//       + new Date().toISOString().replace(/:/g, '') + '.pdf'
-//   const reportPath = getRootPath() + '/reports/' + reportName
-
-//   pdf.pipe(fs.createWriteStream(reportPath));
-  
-
-//   table
-//   // add some plugins (here, a 'fit-to-width' for a column)
-//   .addPlugin(new (require('voilab-pdf-table/plugins/fitcolumn'))({
-//       column: 'nome'
-//   }))
-//   // set defaults to your columns
-//   .setColumnsDefaults({
-//       headerBorder: 'B',
-//       align: 'right'
-//   })
-//   // add table columns
-//   .addColumns([
-//       {
-//           id: 'nome',
-//           header: 'Descrição',
-//           align: 'left'
-//       },
-//       {
-//           id: 'quantidade',
-//           header: 'Quantidade',
-//           width: 100
-//       },
-//       {
-//           id: 'preco',
-//           header: 'Preço Un. (R$)',
-//           width: 100,
-//           renderer: function (tb, data) {
-//             return Number(data.precoTotal).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-//         }
-//       },
-//       {
-//           id: 'precoTotal',
-//           header: 'Preço Total (R$)',
-//           width: 100,
-//           renderer: function (tb, data) {
-//             return Number(data.precoTotal).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-//         }
-//       }
-//   ])
-  
-//   // add events (here, we draw headers on each new page)
-//   .onPageAdded(function (tb) {
-//       tb.addHeader();
-//   });
-
-//   // if no page already exists in your PDF, do not forget to add one
-//   pdf.addPage();
-//   pdf.fontSize(25).text('Bessa PDV', 100, 20, {
-//     width: 410,
-//     align: 'center'
-//   })
-//   const cliente = data.dataValues.cliente ? data.dataValues.cliente : 'consumidor'
-//   pdf.fontSize(12).text('Consumidor: ' + cliente, 71, 50, {
-//     width: 410,
-//     align: 'left'
-//   })
-
-//   const codVenda = data.dataValues.id
-//   pdf.fontSize(12).text('Número Orçamento: ' + codVenda, 71, 50, {
-//     width: 470,
-//     align: 'right'
-//   })
-
-//   const dataVenda = moment.parseZone(data.dataValues.createdAt).format('DD/MM/YYYY HH:mm:ss')
-//   pdf.text('Data do Orçamento: ' + dataVenda, 71, 65, {
-//     width: 410,
-//     align: 'left'
-//   })
-//   // espaço branco
-//   pdf.text(' ', 71, 75, {
-//     width: 410,
-//     align: 'left'
-//   })
-
-//   const newArr = data.dataValues.itensVenda.map(itemVendaResp => {
-//     const itemVenda = itemVendaResp.dataValues
-//     const itemVO = {
-//       nome: itemVenda.nome,
-//       quantidade: itemVenda.quantidade,
-//       preco: itemVenda.preco,
-//       precoTotal: itemVenda.precoTotal
-//     }
-//     return itemVO
-//   })
-
-//   // Linha preta começo
-//   pdf.save().moveTo(72, 86).lineTo(540, 86)
-//   let altura = 330
-//   if (newArr.length >= 16) {
-//     altura = 690
-//   }
-//   pdf.save().moveTo(72, altura).lineTo(540, altura)
-  
-//   // draw content, by passing data to the addBody method
-//   // console.log(data.dataValues.itensVenda[0].dataValues)
-//   // const arr = [data.dataValues.itensVenda[0].dataValues]
-//   table.addBody(newArr);
-
-//   let qtde = 0
-//   newArr.forEach(itemVenda => {
-//     qtde += Number(itemVenda.quantidade)
-//   });
-//   const dataImpressao = moment.parseZone(new Date()).format('DD/MM/YYYY HH:mm:ss')
-//   pdf.text('Subtotal: ' + Number(data.dataValues.subtotal).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
-//       + '   Frete: ' + (data.dataValues.frete ? Number(data.dataValues.frete).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.') : '0,00')
-//       + '   Desconto: ' + (data.dataValues.desconto ? Number(data.dataValues.desconto).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.') : '0,00')
-//       , 71, altura + 10, {
-//     width: 470,
-//     align: 'left'
-//   })
-//   pdf.text('>> Total: ' + Number(data.dataValues.total).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'), 71, altura + 10, {
-//     width: 470,
-//     align: 'right'
-//   })
-
-//   pdf.text('Data de Impressão: ' + dataImpressao, 71, altura + 25, {
-//     width: 410,
-//     align: 'left'
-//   })
-//   pdf.text(newArr.length + (newArr.length == 1 ? ' produto' : ' produtos'), 320, altura + 25, {
-//     width: 410,
-//     align: 'left'
-//   })
-// 
-//   pdf.text(' / ' + qtde + (qtde == 1 ? ' item' : ' itens'), 390, altura + 25, {
-//     width: 410,
-//     align: 'left'
-//   })
-
-//   pdf.end();
-
-//   res.send('http://127.0.0.1:8887/' + reportName)
-// }
-
-
-// exports.generateReport = (req, res, next) => {
-//   var docDefinition = {
-//     content: [
-//       { text: 'MyTable:', fontSize: 12, bold: true, margin: [0, 20, 0, 8] },
-//       {
-//         style: 'table',
-//         table: {
-//           headerRows: 1,
-//           widths: [235, 75, 90, 90],
-//           body: [
-//             [
-//               { text: 'Descrição', style: 'tableHeader' }, 
-//               { text: 'Quantidade', style: 'tableHeader' }, 
-//               { text: 'Preço Un. (R$)', style: 'tableHeader' },
-//               { text: 'Preço Total (R$)', style: 'tableHeader' }
-//             ],
-//             ['Cimento Caue CP2', 3, 'Sample value 3', 'Sample value 4'],
-//             ['Sample value 1', 3, 'Sample value 3', 'Sample value 4'],
-//             ['Sample value 1', 3, 'Sample value 3', 'Sample value 4'],
-//             ['Sample value 1', 3, 'Sample value 3', 'Sample value 4'],
-//             ['Sample value 1', 3, 'Sample value 3', 'Sample value 4'],
-//           ]
-//         },
-//         layout: {
-//           hLineWidth: function (i, node) {
-//             return (i === 0 || i === 1 || i === node.table.body.length) ? 2 : 0;
-//           },
-//           vLineWidth: function (i, node) {
-//             return 0;
-//           },
-//           hLineColor: function (i, node) {
-//             return 'black';
-//           }
-//         }
-//       },
-//     ],
-//     styles: {
-//       table: {
-//         margin: [0, 5, 0, 15]
-//       },
-//       tableHeader: {
-//         bold: true,
-//         fontSize: 12,
-//         color: 'black'
-//       }
-//     }
-//   };
-//   try {
-//     var pdfDoc = printer.createPdfKitDocument(docDefinition);
-//   } catch (error) {
-//     console.log(error)
-//   }
-//   const reportName = 'tables.pdf'
-//   const reportPath = getRootPath() + '/reports/' + reportName
-
-//   pdfDoc.pipe(fs.createWriteStream(reportPath));
-//   pdfDoc.end();
-//   res.send('http://127.0.0.1:8887/' + reportName)
-// }
-
-// exports.generateReport = (req, res, next) => {
-//   const id = req.query.id;
-
-//   Venda.findOne({where: {id: id}, 
-//     include: [{
-//       association: ItemVenda.Venda,
-//       as: 'itensVenda'
-//   }]})
-//     .then(data => {
-//       if (data) {
-//         this.printVenda(data, res)
-//       } else {
-//         next({messageError: 'Erro ao buscar venda para impressão.', techError: 'Erro ao buscar.'})
-//       }
-//     })
-//     .catch(err => {
-//       const errorResponse = {
-//         messageError: 'Erro ao buscar venda para impressão.',
-//         techError: err.toString()
-//       }
-//       next(errorResponse)
-//     });
-// }
