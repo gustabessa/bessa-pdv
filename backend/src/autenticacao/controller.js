@@ -22,11 +22,9 @@ exports.login = async (req, res, next) => {
     }
     const senhaCorreta = bcrypt.compareSync(senha, user.senha);
     if (senhaCorreta) {
-      let token = jwt.sign({ id: user.id }, process.env.SECRET, {
-        expiresIn: 3000 // expires in 50min
-      });
+      let token = jwt.sign({ id: user.id }, process.env.SECRET);
       res.setHeader('accesstoken', token)
-      res.sendStatus(200);
+      res.status(200).send({ auth: true, accesstoken: token });
     } else {
       next({messageError: 'Usuário ou senha incorreta.', techError: 'Erro de autenticação.'})
     }

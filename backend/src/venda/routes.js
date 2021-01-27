@@ -1,6 +1,6 @@
 module.exports = (app) => {
   const controller = require('./controller')
-  
+
   // Criar nova venda
   app.post('/venda', controller.create);
   

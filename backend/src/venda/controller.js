@@ -6,13 +6,10 @@ const printer = new PdfPrinter(roboto);
 const Venda = require('./model');
 const moment = require('moment');
 const { getRootPath } = require('../../index');
-const itemVendaController = require('../itemvenda/controller');
 const { Op } = require("sequelize");
 const db = require('../configs/sequelize');
 const ItemVenda = require('../itemvenda/model');
 const fs = require('fs')
-// const PdfTable = require('voilab-pdf-table'),
-//       PdfDocument = require('pdfkit');
 
 exports.create = (req, res, next) => {
 
@@ -270,7 +267,9 @@ exports.printVenda = (data) => {
     const qtdes = itens.length + (itens.length == 1 ? ' produto' : ' produtos') + ' / ' + qtde + (qtde == 1 ? ' item' : ' itens')
     var docDefinition = {
       content: [
-        { text: 'BESSA PDV', fontSize: 24, alignment: 'center' },
+        { text: 'MJ BARBOSA MATERIAIS P/ CONSTRUÇÃO', fontSize: 12, alignment: 'center', margin: [0, -20, 0, 0] },
+        { text: 'AV. ALOIZIO DE OLIVEIRA, 329 - ONEIDA MENDES', fontSize: 12, alignment: 'center' },
+        { text: 'UBERABA/MG - CEP 38082-188 FONE/FAX: (34) 3312-0009', fontSize: 12, alignment: 'center', margin: [0, 0, 0, 10] },
         { text: 'Consumidor: ' + cliente, margin: [0, 0, 0, -15] },
         { text: 'Número Orçamento: ' + codVenda, style: 'textRight' },
         { text: 'Data do Orçamento: ' + dataVenda },
@@ -326,6 +325,15 @@ exports.printVenda = (data) => {
     pdfDoc.end();
     setTimeout(() => {
       resolve('http://127.0.0.1:8887/' + reportName)
+      setTimeout(() => {
+        fs.unlink(reportPath,
+          err => {
+            if (err) {
+              console.log(err)
+              return
+            }
+          })
+      }, 20000);
     }, 1000);
   })
 }

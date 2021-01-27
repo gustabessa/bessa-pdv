@@ -1,5 +1,8 @@
 import axios from 'axios'
-
+// prod
+const baseUrl = 'http://127.0.0.1:3000'
+// dev
+// const baseUrl = ''
 const AUTH_TOKEN = 'tokenApi'
 const REMEMBER_PARAM = 'accesstoken'
 
@@ -9,6 +12,8 @@ axios.interceptors.request.use(function (config) {
   if (authToken) {
     config.headers[REMEMBER_PARAM] = authToken
   }
+  // prod
+  config.url = config.url.replace(/\/api/g, '')
   return config
 }, function (error) {
   // Do something with request error
@@ -18,8 +23,8 @@ axios.interceptors.request.use(function (config) {
 // Add a response interceptor
 axios.interceptors.response.use(function (response) {
   // Guarda o token de authenticação toda vez que ele vem em um response
-  const token = response.headers[REMEMBER_PARAM]
-  if (token) {
+  const token = response.data.accesstoken
+  if (token !== undefined) {
     window.localStorage.setItem('tokenApi', token)
   }
 
@@ -30,7 +35,7 @@ axios.interceptors.response.use(function (response) {
 
 export default {
   doGet (url, sucesso, falha, data) {
-    axios.get(url, { params: data })
+    axios.get(baseUrl + url, { params: data })
       .then(data => {
         this.tratarResposta(data, sucesso, falha)
       })
@@ -41,7 +46,7 @@ export default {
   },
 
   doPost (url, data, sucesso, falha) {
-    axios.post(url, data)
+    axios.post(baseUrl + url, data)
       .then(data => {
         this.tratarResposta(data, sucesso, falha)
       })
@@ -52,7 +57,7 @@ export default {
   },
 
   doPut (url, data, sucesso, falha) {
-    axios.put(url, data)
+    axios.put(baseUrl + url, data)
       .then(data => {
         this.tratarResposta(data, sucesso, falha)
       })
@@ -63,7 +68,7 @@ export default {
   },
 
   doDelete (url, data, sucesso, falha) {
-    axios.delete(url, { data: data })
+    axios.delete(baseUrl + url, { data: data })
       .then(data => {
         this.tratarResposta(data, sucesso, falha)
       })

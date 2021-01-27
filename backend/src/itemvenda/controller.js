@@ -46,6 +46,7 @@ exports.findOne = (req, res, next) => {
     }
     next(errorResponse)
   });
+  
 }
 
 exports.destroy = (req, res, next) => {

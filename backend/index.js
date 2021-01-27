@@ -1,6 +1,7 @@
 require('dotenv-safe').config();
 const jwt = require('jsonwebtoken');
 const express = require('express')
+const cors = require('cors')
 const app = express()
 const bodyParser = require('body-parser')
 const db = require('./src/configs/sequelize')
@@ -12,6 +13,10 @@ exports.getRootPath = () => {
   return ROOT_PATH
 }
 
+// Remover /api no prod
+// app.use(tratarRequest)
+app.use(cors())
+app.options('*', cors())
 app.use(bodyParser.json()) 
 app.use(bodyParser.urlencoded({extended: true})) 
 app.use(verifyJWT)
@@ -27,7 +32,14 @@ require('./src/produto/routes')(app)
 require('./src/venda/routes')(app)
 require('./src/autenticacao/routes')(app)
 
+function tratarRequest(req, res, next) {
+  req.url = req.url.replace(/\/api/g, '')
+  next()
+}
+
 function verifyJWT(req, res, next){
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,accesstoken');
   if (!isPublicPath(req, req.url)) {
     const token = req.headers['accesstoken'];
     if (!token || token === 'null' || token === 'undefined') return res.status(200).send({ auth: false, hasError: true, messageError: 'Acesso negado! Faça login.', techError: 'Acesso negado.' });
