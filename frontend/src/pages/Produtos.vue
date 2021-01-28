@@ -26,7 +26,7 @@
         <q-input
           outlined
           v-model="model"
-          debounce="500"
+          debounce="700"
           @input="filterFn"
           @keyup.enter="filterFn"
           hint="Busque pelo nome do produto"
@@ -246,6 +246,7 @@ export default {
       this.id = null
       this.nome = null
       this.preco = null
+      this.precoCusto = null
       this.table = false
       this.$refs.nomeProduto.focus()
     },

@@ -22,11 +22,13 @@
           v-model="cliente"
           class="q-mb-md"
           :color='themeInput'
+          @keyup.enter="focusProduto"
           dense />
         <q-input
           outlined
+          ref="refProduto"
           v-model="model"
-          debounce="500"
+          debounce="700"
           @input="filterFn"
           @keyup.enter="filterFn"
           label="Produto"
@@ -274,6 +276,7 @@ export default {
             this.itensVenda = data.itensVenda.map(
               item => {
                 return {
+                  item: item.item,
                   fk_itemvenda_produto: item.fk_itemvenda_produto,
                   nome: item.nome,
                   preco: item.preco,
@@ -421,6 +424,9 @@ export default {
         this.$refs.quantidadeRef.focus()
       }, 200)
     },
+    focusProduto () {
+      this.$refs.refProduto.focus()
+    },
     adicionarItem () {
       if (this.quantidade > 0) {
         if (typeof this.preco === 'string') {
@@ -443,6 +449,7 @@ export default {
         this.nome = null
         this.preco = null
         this.quantidade = null
+        this.$refs.refProduto.focus()
       } else {
         this.$q.notify({
           type: 'negative',
