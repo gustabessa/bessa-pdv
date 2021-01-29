@@ -22,6 +22,7 @@
           v-model="cliente"
           class="q-mb-md"
           :color='themeInput'
+          @blur="salvarCliente"
           @keyup.enter="focusProduto"
           dense />
         <q-input
@@ -370,6 +371,7 @@ export default {
               message: 'Venda finalizada com sucesso!',
               timeout: 2000
             })
+            this.$store.dispatch('bessaPdv/limparVenda')
             window.open(data)
             this.itensVenda = []
             this.cliente = null
@@ -427,6 +429,9 @@ export default {
     focusProduto () {
       this.$refs.refProduto.focus()
     },
+    salvarCliente () {
+      this.$store.dispatch('bessaPdv/cliente', this.cliente)
+    },
     adicionarItem () {
       if (this.quantidade > 0) {
         if (typeof this.preco === 'string') {
@@ -444,6 +449,7 @@ export default {
           itemVenda.item = item
           item++
         })
+        this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
         this.produtoSelecionado = false
         this.id = null
         this.nome = null
@@ -485,7 +491,9 @@ export default {
       if (
         this.focused !== true ||
         [33, 34, 38, 40, 46].indexOf(evt.keyCode) === -1 ||
-        this.$refs.myTable === undefined
+        this.$refs.myTable === undefined ||
+        !this.selected ||
+        !this.selected[0]
       ) {
         return
       }
@@ -527,6 +535,7 @@ export default {
         itemVenda.item = item
         item++
       })
+      this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
     }
   },
   computed: {
@@ -549,6 +558,10 @@ export default {
         return 'my-focused-table'
       } else return ''
     }
+  },
+  mounted () {
+    this.cliente = this.$store.getters['bessaPdv/clienteGetter']
+    this.itensVenda = [...this.$store.getters['bessaPdv/itensVendaGetter']]
   }
 }
 </script>

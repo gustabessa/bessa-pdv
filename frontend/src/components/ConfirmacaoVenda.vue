@@ -126,6 +126,7 @@ export default {
     },
 
     onDialogHide () {
+      this.$store.dispatch('bessaPdv/valoresVenda', this.valores)
       this.$emit('hide')
     },
 
@@ -178,6 +179,12 @@ export default {
     themeInverse () {
       return themeUtil.getThemeInverse(this.$store)
     }
+  },
+  mounted () {
+    this.valores.vlrDesconto = this.$store.getters['bessaPdv/descontoGetter']
+    this.valores.vlrFrete = this.$store.getters['bessaPdv/freteGetter']
+    this.valores.numFrete = this.$store.getters['bessaPdv/qtdeFreteGetter']
+    this.calcularValores()
   }
 }
 </script>

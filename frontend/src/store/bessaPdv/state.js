@@ -1,5 +1,9 @@
 export default function () {
   return {
-    tokenApi: null
+    itensVenda: [],
+    cliente: null,
+    desconto: null,
+    frete: null,
+    qtdeFrete: null
   }
 }
