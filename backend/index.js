@@ -6,8 +6,8 @@ const app = express()
 const bodyParser = require('body-parser')
 const db = require('./src/configs/sequelize')
 const ROOT_PATH = __dirname
-const publicPath = ['/auth', '/favicon.ico', '/login']
-const publicPost = ['/user']
+const publicPath = ['auth', 'favicon.ico', 'login', 'reports']
+const publicPost = ['user']
 
 exports.getRootPath = () => {
   return ROOT_PATH
@@ -20,6 +20,7 @@ app.options('*', cors())
 app.use(bodyParser.json()) 
 app.use(bodyParser.urlencoded({extended: true})) 
 app.use(verifyJWT)
+app.use('/reports', express.static(ROOT_PATH + '/reports'));
 
 // app.use(express.static('public'))
 
@@ -60,9 +61,10 @@ function verifyJWT(req, res, next){
 }
 
 function isPublicPath (req, path) {
-  if (publicPath.indexOf(path) >= 0) {
+  const reqPath = path.split('/')[1]
+  if (publicPath.indexOf(reqPath) >= 0) {
     return true;
-  } else if (req.method === 'POST' && publicPost.indexOf(path) >= 0) {
+  } else if (req.method === 'POST' && publicPost.indexOf(reqPath) >= 0) {
     return true;
   } else return false;
 }

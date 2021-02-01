@@ -324,7 +324,7 @@ exports.printVenda = (data) => {
     pdfDoc.pipe(fs.createWriteStream(reportPath));
     pdfDoc.end();
     setTimeout(() => {
-      resolve('http://127.0.0.1:8887/' + reportName)
+      resolve('http://127.0.0.1:3000/reports/' + reportName)
       setTimeout(() => {
         fs.unlink(reportPath,
           err => {
