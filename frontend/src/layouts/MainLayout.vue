@@ -41,6 +41,7 @@
       show-if-above
       bordered
       :content-style="menuStyle"
+      :width="200"
     >
       <q-list>
         <q-item-label

@@ -10,7 +10,6 @@ export default ({ router }) => {
       httpUtil.doGet('/api/auth/check',
         data => {
           if (data && data.hasError) {
-            console.error(data.techError)
             Notify.create({
               type: 'negative',
               message: data.messageError,
@@ -26,7 +25,7 @@ export default ({ router }) => {
             message: 'Falha na autenticação.',
             timeout: 2000
           })
-          checkTokenApi(to, from, next)
+          next('/login')
         }
       )
     } else {
