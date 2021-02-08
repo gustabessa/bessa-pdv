@@ -142,6 +142,16 @@
               <template v-slot:body="props">
                 <q-tr :props="props"
                   @click="escolherItem(props.row, props)">
+                  <q-td key="opc" class="cursor-pointer" :props="props">
+                    <q-btn
+                      flat
+                      dense
+                      round
+                      class="q-mr-md text-red-10"
+                      icon="delete_outline"
+                      @click="removerSelecionado(props.row)"
+                    />
+                  </q-td>
                   <q-td key="cod" class="cursor-pointer" :props="props">
                     {{ props.row.fk_itemvenda_produto }}
                   </q-td>
@@ -216,6 +226,11 @@ export default {
         }
       ],
       columnsVenda: [
+        {
+          name: 'opc',
+          label: '...',
+          align: 'left'
+        },
         {
           name: 'cod',
           label: 'Cod.',
@@ -437,18 +452,23 @@ export default {
         if (typeof this.preco === 'string') {
           this.preco = Number.parseFloat(this.preco.replace(',', '.')).toFixed(2)
         }
-        this.itensVenda.push({
+        const arrAux = [...this.itensVenda]
+
+        arrAux.push({
           nome: this.nome,
           fk_itemvenda_produto: this.id,
           preco: this.preco,
           quantidade: this.quantidade,
           precoTotal: this.getPrecoTotal()
         })
+
         let item = 1
-        this.itensVenda.forEach(itemVenda => {
+        arrAux.forEach(itemVenda => {
           itemVenda.item = item
           item++
         })
+
+        this.itensVenda = arrAux
         this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
         this.produtoSelecionado = false
         this.id = null
@@ -527,14 +547,23 @@ export default {
       }
       this.selected = [computedRows[index]]
     },
-    removerSelecionado () {
-      this.itensVenda = this.itensVenda.filter(itemVenda => itemVenda.item !== this.selected[0].item)
+    removerSelecionado (row) {
+      if (row) {
+        this.selected = [row]
+      }
+      let arrAux = [...this.itensVenda]
+      arrAux = arrAux.filter(itemVenda => itemVenda.item !== this.selected[0].item)
       this.selected = []
+
       let item = 1
-      this.itensVenda.forEach(itemVenda => {
-        itemVenda.item = item
+      arrAux.forEach(itemVenda => {
+        itemVenda = {
+          ...itemVenda,
+          item: item
+        }
         item++
       })
+      this.itensVenda = arrAux
       this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
     }
   },
