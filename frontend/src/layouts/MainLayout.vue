@@ -8,7 +8,7 @@
           round
           icon="menu"
           aria-label="Menu"
-          @click="leftDrawerOpen = !leftDrawerOpen"
+          @click="gerenciarGaveta"
         />
         <q-btn
           flat
@@ -123,6 +123,17 @@ export default {
           })
         })
     },
+    gerenciarGaveta () {
+      this.leftDrawerOpen = !this.leftDrawerOpen
+      this.timeoutFecharGaveta()
+    },
+    timeoutFecharGaveta () {
+      if (this.leftDrawerOpen) {
+        setTimeout(() => {
+          this.leftDrawerOpen = false
+        }, 10000)
+      }
+    },
     escolheTema () {
       this.$q.dialog({
         component: EscolhaTema,
@@ -155,6 +166,9 @@ export default {
         backgroundColor: scss['background-' + themeUtil.getTheme(this.$store)]
       }
     }
+  },
+  mounted () {
+    this.timeoutFecharGaveta()
   },
   beforeUpdate () {
     this.tokenApi = window.localStorage.getItem('tokenApi')
