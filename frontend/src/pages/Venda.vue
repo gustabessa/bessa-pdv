@@ -548,23 +548,38 @@ export default {
       this.selected = [computedRows[index]]
     },
     removerSelecionado (row) {
-      if (row) {
-        this.selected = [row]
-      }
-      let arrAux = [...this.itensVenda]
-      arrAux = arrAux.filter(itemVenda => itemVenda.item !== this.selected[0].item)
-      this.selected = []
+      dialog.confirm('Deseja excluir o item?')
+        .onOk(() => {
+          if (row) {
+            this.selected = [row]
+          }
+          let arrAux = [...this.itensVenda]
+          arrAux = arrAux.filter(itemVenda => itemVenda.item !== this.selected[0].item)
+          this.selected = []
 
-      let item = 1
-      arrAux.forEach(itemVenda => {
-        itemVenda = {
-          ...itemVenda,
-          item: item
-        }
-        item++
-      })
-      this.itensVenda = arrAux
-      this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
+          let item = 1
+          arrAux.forEach(itemVenda => {
+            itemVenda = {
+              ...itemVenda,
+              item: item
+            }
+            item++
+          })
+          this.itensVenda = arrAux
+          this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
+          this.$q.notify({
+            type: 'positive',
+            message: 'Item excluído.',
+            timeout: 2000
+          })
+        })
+        .onCancel(() => {
+          this.$q.notify({
+            type: 'warning',
+            message: 'Exclusão do item cancelada.',
+            timeout: 2000
+          })
+        })
     }
   },
   computed: {
