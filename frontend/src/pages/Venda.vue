@@ -12,6 +12,22 @@
             icon="input"
             @click="importarVenda"
           />
+          <q-tooltip>
+            Importar venda
+          </q-tooltip>
+        </div>
+        <div class="float-right">
+          <q-btn
+            flat
+            dense
+            round
+            class="q-mr-md"
+            icon="warning_amber"
+            @click="limparVenda"
+          />
+          <q-tooltip>
+            Limpar venda
+          </q-tooltip>
         </div>
       </q-card-section>
       <q-separator />
@@ -301,6 +317,8 @@ export default {
                 }
               }
             )
+            this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
+            this.$store.dispatch('bessaPdv/cliente', this.cliente)
           } else if (data.hasError) {
             console.error(data.techError)
             this.$q.notify({
@@ -323,7 +341,6 @@ export default {
       }
       dialog.prompt('Importar venda:')
         .onOk(data => httpUtil.doGet('/api/venda/' + data, callback.onSuccess, callback.onError))
-        // httpUtil.doPost('/api/venda', venda, callback.onSuccess, callback.onError)
         .onCancel(() => { this.loading = false })
     },
     escolherItem (row, props) {
@@ -375,6 +392,13 @@ export default {
         })
       }
       return result
+    },
+    limparVenda () {
+      dialog.confirm('Tem certeza que deseja limpar a venda?').onOk(() => {
+        this.$store.dispatch('bessaPdv/limparVenda')
+        this.itensVenda = []
+        this.cliente = null
+      })
     },
     finalizarVenda () {
       this.loading = true

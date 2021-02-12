@@ -2,36 +2,48 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar :class="theme">
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="gerenciarGaveta"
-        />
-        <q-btn
-          flat
-          dense
-          round
-          v-if="isLogged"
-          icon="logout"
-          @click="logout()"
-        />
+        <div>
+          <q-btn
+            flat
+            dense
+            round
+            icon="menu"
+            aria-label="Menu"
+            @click="gerenciarGaveta"
+          />
+          <q-tooltip>
+            {{ leftDrawerOpen ? 'Fechar menu' : 'Abrir menu'}}
+          </q-tooltip>
+        </div>
+        <div>
+          <q-btn
+            flat
+            dense
+            round
+            v-if="isLogged"
+            icon="logout"
+            @click="logout()"
+          />
+          <q-tooltip>
+            Logout
+          </q-tooltip>
+        </div>
 
         <q-toolbar-title>
           Bessa PDV
         </q-toolbar-title>
 
         <div>
-        <q-btn
-          flat
-          dense
-          round
-          icon="palette"
-          @click="escolheTema()"
-        />
-
+          <q-btn
+            flat
+            dense
+            round
+            icon="palette"
+            @click="escolheTema()"
+          />
+          <q-tooltip>
+            Escolher tema
+          </q-tooltip>
         </div>
       </q-toolbar>
     </q-header>

@@ -10,6 +10,7 @@
         <div class="row">
           <div class="col-xs-12 col-sm-3 q-pr-sm">
             <q-input
+              @keyup.enter="filterFn"
               dense
               :color='themeInput'
               outlined
@@ -22,6 +23,7 @@
           </div>
           <div class="col-xs-12 col-sm-3 q-pr-sm">
             <q-input
+              @keyup.enter="filterFn"
               dense
               :color='themeInput'
               outlined
@@ -34,6 +36,7 @@
           </div>
           <div class="col-xs-12 col-sm-3 q-pr-sm">
             <q-input
+              @keyup.enter="filterFn"
               dense
               :color='themeInput'
               outlined
@@ -44,6 +47,7 @@
           </div>
           <div class="col-xs-12 col-sm-3">
             <q-input
+              @keyup.enter="filterFn"
               dense
               :color='themeInput'
               outlined
@@ -55,7 +59,6 @@
         </div>
         <div class="text-center">
           <q-btn :class="theme" style="width: 30%;" class="text-white q-mr-md" label="Filtrar" :loading="loading" @click="filterFn" />
-          <q-btn :class="theme" style="width: 30%;" class="text-white q-ml-md" label="Imprimir" :loading="loading" @click="generateReport" />
         </div>
       </q-card-section>
       <q-separator />
@@ -101,37 +104,12 @@
           </div>
         </template>
       </q-card-section>
-      <q-separator />
-      <q-card-section>
-        <template>
-          <div>
-            Itens da Venda
-            <q-table
-              class="my-sticky-header-table"
-              :data="itensVenda"
-              :columns="columnsItem"
-              row-key="name"
-              bordered
-              separator="cell"
-              hide-bottom
-              :rows-per-page-options="rowsPerPageOptions"
-            >
-              <template v-slot:header="props">
-                <q-tr :props="props">
-                  <q-th :class="theme" v-for="col in props.cols" :key="col.name" :props="props">
-                    {{ col.label }}
-                  </q-th>
-                </q-tr>
-              </template>
-            </q-table>
-          </div>
-        </template>
-      </q-card-section>
     </q-card>
   </q-page>
 </template>
 
 <script>
+import DetalhamentoVenda from '../components/DetalhamentoVenda'
 import httpUtil from '../components/util/HttpUtil'
 import themeUtil from '../components/util/ThemeUtil'
 import scss from '../css/quasar.variables.json'
@@ -151,7 +129,7 @@ export default {
           name: 'cliente',
           align: 'left',
           label: 'Cliente',
-          field: row => row.cliente != null ? row.cliente : 'Consumidor'
+          field: row => this.getCliente(row)
         },
         {
           name: 'subtotal',
@@ -192,41 +170,6 @@ export default {
           }
         }
       ],
-      columnsItem: [
-        {
-          name: 'cod',
-          required: true,
-          label: 'Cod.',
-          align: 'left',
-          field: row => row.fk_itemvenda_produto
-        },
-        {
-          name: 'nome',
-          align: 'left',
-          label: 'Produto',
-          field: row => row.nome
-        },
-        {
-          name: 'preco',
-          align: 'left',
-          label: 'Preço Un. (R$)',
-          field: row => row.preco,
-          format: val => this.formataDinheiro(val)
-        },
-        {
-          name: 'quantidade',
-          align: 'left',
-          label: 'Quantidade',
-          field: row => row.quantidade
-        },
-        {
-          name: 'precoTotal',
-          align: 'left',
-          label: 'Preço Total (R$)',
-          field: row => row.precoTotal,
-          format: val => this.formataDinheiro(val)
-        }
-      ],
       focused: false,
       itensVenda: [],
       selected: [],
@@ -244,39 +187,13 @@ export default {
     }
   },
   methods: {
+    getCliente (row) {
+      if (row.cliente && row.cliente.trim() !== '') {
+        return row.cliente
+      } return 'Consumidor'
+    },
     formataDinheiro (val) {
       return `R$ ${Number(val).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')}`
-    },
-    generateReport () {
-      if (this.selected[0]) {
-        httpUtil.doGet('/api/venda/report/history',
-          data => {
-            if (data && !data.hasError) {
-              window.open(data)
-            } else {
-              console.error(data.techError)
-              this.$q.notify({
-                type: 'negative',
-                message: data.messageError,
-                timeout: 2000
-              })
-            }
-          },
-          err => {
-            console.error(err)
-            this.$q.notify({
-              type: 'negative',
-              message: 'Erro ao gerar relatório.',
-              timeout: 2000
-            })
-          }, { id: this.selected[0].id })
-      } else {
-        this.$q.notify({
-          type: 'negative',
-          message: 'Selecione uma venda para imprimir.',
-          timeout: 2000
-        })
-      }
     },
     filterFn () {
       const filters = {
@@ -320,6 +237,11 @@ export default {
     escolherVenda (row, props) {
       this.itensVenda = row.itensVenda
       this.selected = [row]
+      this.$q.dialog({
+        component: DetalhamentoVenda,
+        parent: this,
+        venda: row
+      })
       // this.id = row.id
       // this.nome = row.nome
       // this.preco = row.preco
