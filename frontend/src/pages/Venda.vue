@@ -173,22 +173,22 @@
                   </q-td>
                   <q-td key="nome" :props="props">
                     {{ props.row.nome }}
-                    <q-popup-edit v-model="props.row.nome">
+                    <q-popup-edit @hide="atualizarStore" auto-save v-model="props.row.nome">
                       <q-input type="text" v-model="props.row.nome" dense autofocus />
                     </q-popup-edit>
                   </q-td>
                   <q-td key="preco" :props="props">
                     {{ formataDinheiro(props.row.preco) }}
-                    <q-popup-edit v-model="props.row.preco">
+                    <q-popup-edit @hide="atualizarStore" auto-save v-model="props.row.preco">
                       <q-input ref="refPreco" v-model="props.row.preco" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco)" dense autofocus mask="#,##"
                         fill-mask="0"
                         reverse-fill-mask />
                     </q-popup-edit>
                   </q-td>
                   <q-td key="quantidade" @click="selectQuantidade" :props="props">
-                    {{ props.row.quantidade }}
-                    <q-popup-edit v-model="props.row.quantidade">
-                      <q-input ref="refQuantidade" type="number" v-model.number="props.row.quantidade" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco, )" dense autofocus />
+                    {{ Number(props.row.quantidade).toFixed(2) }}
+                    <q-popup-edit @hide="atualizarStore" auto-save v-model="props.row.quantidade">
+                      <q-input ref="refQuantidade" type="number" v-model.number="props.row.quantidade" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco)" dense autofocus />
                     </q-popup-edit>
                   </q-td>
                   <q-td key="precoTotal" :props="props">
@@ -275,6 +275,7 @@ export default {
       ],
       data: [],
       itensVenda: [],
+      itensVendaTable: [],
       selected: [],
       loading: false,
       model: null,
@@ -396,9 +397,27 @@ export default {
     limparVenda () {
       dialog.confirm('Tem certeza que deseja limpar a venda?').onOk(() => {
         this.$store.dispatch('bessaPdv/limparVenda')
+        this.$q.notify({
+          type: 'positive',
+          message: 'Venda limpa com sucesso!',
+          timeout: 2000
+        })
         this.itensVenda = []
         this.cliente = null
       })
+    },
+    atualizarStore () {
+      this.itensVendaStore = this.itensVenda.map(x => {
+        return {
+          item: x.item,
+          fk_itemvenda_produto: x.fk_itemvenda_produto,
+          nome: x.nome,
+          preco: x.preco,
+          precoTotal: x.precoTotal,
+          quantidade: x.quantidade
+        }
+      })
+      this.$store.dispatch('bessaPdv/itensVenda', this.itensVendaStore)
     },
     finalizarVenda () {
       this.loading = true
@@ -629,7 +648,17 @@ export default {
   },
   mounted () {
     this.cliente = this.$store.getters['bessaPdv/clienteGetter']
-    this.itensVenda = [...this.$store.getters['bessaPdv/itensVendaGetter']]
+    this.itensVendaStore = [...this.$store.getters['bessaPdv/itensVendaGetter']]
+    this.itensVenda = this.itensVendaStore.map(x => {
+      return {
+        item: x.item,
+        fk_itemvenda_produto: x.fk_itemvenda_produto,
+        nome: x.nome,
+        preco: x.preco,
+        precoTotal: x.precoTotal,
+        quantidade: x.quantidade
+      }
+    })
   }
 }
 </script>

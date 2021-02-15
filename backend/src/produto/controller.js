@@ -63,8 +63,16 @@ exports.findAll = (req, res, next) => {
   if (req.query) {
     const q = req.query
     if (q.nome) {
+      const palavras = q.nome.trim().split(' ')
+      q.nome = ''
+      palavras.forEach(palavra => {
+        if (palavra !== '') {
+          q.nome += '%' + palavra.trim() + '% '
+        }
+      }); 
+      q.nome = q.nome.trim()
       where.nome = {
-        [Op.iLike]: '%' + q.nome + '%'
+        [Op.iLike]: q.nome
       } 
     }
   }

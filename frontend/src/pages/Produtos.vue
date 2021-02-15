@@ -29,6 +29,7 @@
           debounce="700"
           @input="filterFn"
           @keyup.enter="filterFn"
+          placeholder="Pesquisar Produto"
           hint="Busque pelo nome do produto"
           style="padding-bottom: 32px"
           :color='themeInput'
