@@ -3,6 +3,19 @@
     <q-card class="q-dialog-plugin">
       <q-card-section :class="theme" class="card-header">
         Finalizar Venda
+        <div class="float-right">
+          <q-btn
+            flat
+            dense
+            round
+            class="q-mr-md"
+            icon="close"
+            @click="hide"
+          />
+          <q-tooltip>
+            Fechar
+          </q-tooltip>
+        </div>
       </q-card-section>
       <q-separator />
       <q-card-section>

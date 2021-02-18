@@ -253,9 +253,9 @@ exports.printVenda = (data) => {
 
     newArr.unshift([
       { text: 'Descrição', style: 'tableHeader' }, 
-      { text: 'Quantidade', style: 'tableHeader' }, 
-      { text: 'Preço Un. (R$)', style: 'tableHeader' },
-      { text: 'Preço Total (R$)', style: 'tableHeader' }
+      { text: 'Quantidade', style: 'tableHeaderRight' }, 
+      { text: 'Preço Un. (R$)', style: 'tableHeaderRight' },
+      { text: 'Preço Total (R$)', style: 'tableHeaderRight' }
     ])
     const cliente = data.dataValues.cliente ? data.dataValues.cliente : 'consumidor'
     const codVenda = data.dataValues.id
@@ -310,6 +310,12 @@ exports.printVenda = (data) => {
           bold: true,
           fontSize: 12,
           color: 'black'
+        },
+        tableHeaderRight: {
+          bold: true,
+          fontSize: 12,
+          color: 'black',
+          alignment: 'right'
         }
       }
     };

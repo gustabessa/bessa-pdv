@@ -3,15 +3,28 @@
     <q-card class="q-dialog-plugin">
       <q-card-section :class="theme" class="card-header">
         Detalhamento da Venda
+        <div class="float-right">
+          <q-btn
+            flat
+            dense
+            round
+            class="q-mr-md"
+            icon="close"
+            @click="hide"
+          />
+          <q-tooltip>
+            Fechar
+          </q-tooltip>
+        </div>
       </q-card-section>
       <q-separator />
       <q-card-section>
         <template>
           <div class="row q-mb-md">
-            <div class="col-md-3 offset-md-3 q-pa-sm">
+            <div class="col-3 offset-3 q-pa-sm">
               <q-btn :class="theme" style="width: 100%;" icon="print" class="text-white q-ml-md" label="Imprimir" :loading="loading" @click="generateReport" />
             </div>
-            <div class="col-md-3 q-pa-sm">
+            <div class="col-3 q-pa-sm">
               <q-btn :class="theme" style="width: 100%;" icon="input" class="text-white q-ml-md" label="Importar" :loading="loading" @click="importarVenda" />
             </div>
           </div>
@@ -45,6 +58,8 @@
 import themeUtil from '../components/util/ThemeUtil'
 import scss from '../css/quasar.variables.json'
 import httpUtil from '../components/util/HttpUtil'
+import VisualizarPdf from '../components/VisualizarPdf'
+
 export default {
   name: 'DetalhamentoVenda',
   data () {
@@ -96,7 +111,12 @@ export default {
       httpUtil.doGet('/api/venda/report/history',
         data => {
           if (data && !data.hasError) {
-            window.open(data)
+            this.$q.dialog({
+              component: VisualizarPdf,
+              parent: this,
+              url: data
+            })
+            this.hide()
           } else {
             console.error(data.techError)
             this.$q.notify({

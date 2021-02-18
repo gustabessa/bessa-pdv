@@ -214,6 +214,8 @@ import dialog from '../components/util/DialogUtil'
 import ConfirmacaoVenda from '../components/ConfirmacaoVenda'
 import themeUtil from '../components/util/ThemeUtil'
 import scss from '../css/quasar.variables.json'
+import VisualizarPdf from '../components/VisualizarPdf'
+
 export default {
   name: 'Venda',
   data () {
@@ -430,7 +432,11 @@ export default {
               timeout: 2000
             })
             this.$store.dispatch('bessaPdv/limparVenda')
-            window.open(data)
+            this.$q.dialog({
+              component: VisualizarPdf,
+              parent: this,
+              url: data
+            })
             this.itensVenda = []
             this.cliente = null
           } else {
