@@ -128,6 +128,7 @@ export default {
           format: val => `R$ ${Number.parseFloat(val).toFixed(2)}`.replace(',', '.').replace('.', ',')
         }
       ],
+      primary: '#000000',
       data: [],
       loading: false,
       model: null,
@@ -201,6 +202,7 @@ export default {
         }
         const callback = {
           onSuccess: data => {
+            this.$q.loading.hide()
             if (data && !data.hasError) {
               this.$q.notify({
                 type: 'positive',
@@ -223,6 +225,7 @@ export default {
             this.loading = false
           },
           onError: err => {
+            this.$q.loading.hide()
             console.error(err)
             this.$q.notify({
               type: 'negative',
@@ -234,11 +237,21 @@ export default {
         }
         if (this.id) {
           dialog.confirm('Deseja atualizar o produto?')
-            .onOk(() => httpUtil.doPut('/api/produto', produto, callback.onSuccess, callback.onError))
+            .onOk(() => {
+              this.$q.loading.show({
+                spinnerColor: this.primary
+              })
+              httpUtil.doPut('/api/produto', produto, callback.onSuccess, callback.onError)
+            })
             .onCancel(() => { this.loading = false })
         } else {
           dialog.confirm('Deseja criar o produto?')
-            .onOk(() => httpUtil.doPost('/api/produto', produto, callback.onSuccess, callback.onError))
+            .onOk(() => {
+              this.$q.loading.show({
+                spinnerColor: this.primary
+              })
+              httpUtil.doPost('/api/produto', produto, callback.onSuccess, callback.onError)
+            })
             .onCancel(() => { this.loading = false })
         }
       }
@@ -254,8 +267,12 @@ export default {
     excluirProduto () {
       dialog.confirm('Deseja excluir o produto?')
         .onOk(() => {
+          this.$q.loading.show({
+            spinnerColor: this.primary
+          })
           httpUtil.doDelete('/api/produto', { id: this.id },
             data => {
+              this.$q.loading.hide()
               if (data && !data.hasError) {
                 this.novoProduto()
                 this.$q.notify({
@@ -273,6 +290,7 @@ export default {
               }
             },
             err => {
+              this.$q.loading.hide()
               console.error(err)
               this.$q.notify({
                 type: 'negative',
@@ -298,6 +316,10 @@ export default {
     rowsPerPageOptions () {
       return [100]
     }
+  },
+  mounted () {
+    const cor = this.$store.state.themes.name
+    this.primary = scss[cor]
   }
 }
 </script>

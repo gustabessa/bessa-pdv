@@ -65,6 +65,7 @@ export default {
   data () {
     return {
       loading: false,
+      primary: '#000000',
       itensVenda: [],
       columnsItem: [
         {
@@ -108,8 +109,12 @@ export default {
   },
   methods: {
     generateReport () {
+      this.$q.loading.show({
+        spinnerColor: this.primary
+      })
       httpUtil.doGet('/api/venda/report/history',
         data => {
+          this.$q.loading.hide()
           if (data && !data.hasError) {
             this.$q.dialog({
               component: VisualizarPdf,
@@ -127,6 +132,7 @@ export default {
           }
         },
         err => {
+          this.$q.loading.hide()
           console.error(err)
           this.$q.notify({
             type: 'negative',
@@ -224,6 +230,8 @@ export default {
   },
   mounted () {
     this.itensVenda = this.venda.itensVenda
+    const cor = this.$store.state.themes.name
+    this.primary = scss[cor]
   }
 }
 </script>

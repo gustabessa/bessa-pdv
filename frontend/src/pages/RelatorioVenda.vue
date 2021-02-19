@@ -170,6 +170,7 @@ export default {
           }
         }
       ],
+      primary: '#000000',
       focused: false,
       itensVenda: [],
       selected: [],
@@ -196,6 +197,9 @@ export default {
       return `R$ ${Number(val).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')}`
     },
     filterFn () {
+      this.$q.loading.show({
+        spinnerColor: this.primary
+      })
       const filters = {
         precoFinal: this.precoFinal != null ? Number(this.precoFinal.replace(',', '.')) : null,
         precoInicial: this.precoInicial != null ? Number(this.precoInicial.replace(',', '.')) : null,
@@ -204,6 +208,7 @@ export default {
       }
       httpUtil.doGet('/api/venda',
         data => {
+          this.$q.loading.hide()
           if (data && !data.hasError) {
             if (data.length > 0) {
               this.data = data
@@ -225,6 +230,7 @@ export default {
           }
         },
         err => {
+          this.$q.loading.hide()
           console.error(err)
           this.data = []
           this.$q.notify({
@@ -317,6 +323,8 @@ export default {
   },
   mounted () {
     this.filterFn()
+    const cor = this.$store.state.themes.name
+    this.primary = scss[cor]
   }
 }
 </script>

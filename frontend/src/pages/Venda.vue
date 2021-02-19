@@ -275,6 +275,7 @@ export default {
           label: 'Total (R$)'
         }
       ],
+      primary: '#000000',
       data: [],
       itensVenda: [],
       itensVendaTable: [],
@@ -301,6 +302,7 @@ export default {
       this.loading = true
       const callback = {
         onSuccess: data => {
+          this.$q.loading.hide()
           if (data && !data.hasError) {
             this.$q.notify({
               type: 'positive',
@@ -333,6 +335,7 @@ export default {
           this.loading = false
         },
         onError: err => {
+          this.$q.loading.hide()
           console.error(err)
           this.$q.notify({
             type: 'negative',
@@ -343,7 +346,12 @@ export default {
         }
       }
       dialog.prompt('Importar venda:')
-        .onOk(data => httpUtil.doGet('/api/venda/' + data, callback.onSuccess, callback.onError))
+        .onOk(data => {
+          this.$q.loading.show({
+            spinnerColor: this.primary
+          })
+          httpUtil.doGet('/api/venda/' + data, callback.onSuccess, callback.onError)
+        })
         .onCancel(() => { this.loading = false })
     },
     escolherItem (row, props) {
@@ -425,6 +433,7 @@ export default {
       this.loading = true
       const callback = {
         onSuccess: data => {
+          this.$q.loading.hide()
           if (data && !data.hasError) {
             this.$q.notify({
               type: 'positive',
@@ -450,6 +459,7 @@ export default {
           this.loading = false
         },
         onError: err => {
+          this.$q.loading.hide()
           console.error(err)
           this.$q.notify({
             type: 'negative',
@@ -475,6 +485,9 @@ export default {
             frete: valores.vlrFrete,
             qtdeFrete: valores.qtdeFrete
           }
+          this.$q.loading.show({
+            spinnerColor: this.primary
+          })
           httpUtil.doPost('/api/venda', venda, callback.onSuccess, callback.onError)
         })
         .onCancel(() => { this.loading = false })
@@ -653,6 +666,8 @@ export default {
     }
   },
   mounted () {
+    const cor = this.$store.state.themes.name
+    this.primary = scss[cor]
     this.cliente = this.$store.getters['bessaPdv/clienteGetter']
     this.itensVendaStore = [...this.$store.getters['bessaPdv/itensVendaGetter']]
     this.itensVenda = this.itensVendaStore.map(x => {
