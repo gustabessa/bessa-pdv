@@ -16,6 +16,32 @@
             Fechar
           </q-tooltip>
         </div>
+        <div class="float-right">
+          <q-btn
+            flat
+            dense
+            round
+            class="q-mr-md"
+            icon="refresh"
+            @click="reopen"
+          />
+          <q-tooltip>
+            Atualizar
+          </q-tooltip>
+        </div>
+        <div class="float-right">
+          <q-btn
+            flat
+            dense
+            round
+            class="q-mr-md"
+            icon="tab"
+            @click="windowOpen"
+          />
+          <q-tooltip>
+            Abrir em uma nova aba
+          </q-tooltip>
+        </div>
       </q-card-section>
       <q-separator />
       <q-card-section style="height: 89%;">
@@ -34,6 +60,7 @@
 <script>
 import themeUtil from '../components/util/ThemeUtil'
 import scss from '../css/quasar.variables.json'
+import VisualizarPdf from '../components/VisualizarPdf'
 
 export default {
   name: 'VisualizarPdf',
@@ -46,6 +73,17 @@ export default {
     url: null
   },
   methods: {
+    reopen () {
+      this.$q.dialog({
+        component: VisualizarPdf,
+        parent: this,
+        url: this.url
+      })
+      this.hide()
+    },
+    windowOpen () {
+      window.open(this.url)
+    },
     show () {
       this.$refs.dialog.show()
     },
