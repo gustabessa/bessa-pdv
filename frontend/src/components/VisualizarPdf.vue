@@ -140,6 +140,7 @@ export default {
     },
     salvarImpressora () {
       localStorage.setItem('impressora', this.impressoraEscolhida)
+      this.impressora = this.impressoraEscolhida
       this.modalImpressoraAberto = false
     },
     connectQz () {
@@ -226,7 +227,6 @@ export default {
   mounted () {
     this.connectQz()
     this.impressora = localStorage.getItem('impressora')
-    this.impressoraEscolhida = this.impressora
     qz.security.setCertificatePromise(function (resolve, reject) {
       resolve('-----BEGIN CERTIFICATE-----\n' +
       'MIIDpzCCAo+gAwIBAgIUQIwDgK8WeYWYhuUFDm4MPJ18Ea8wDQYJKoZIhvcNAQEL\n' +
