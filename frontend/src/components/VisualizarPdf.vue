@@ -148,13 +148,16 @@ export default {
         qz.websocket.connect().then(() => {
           this.carregarImpressoras()
         })
+      } else if (!(this.impressoraLista.length > 0)) {
+        return qz.printers.find().then((printers) => {
+          this.impressoraLista = printers
+        })
       }
     },
     carregarImpressoras () {
       if (!(this.impressoraLista.length > 0)) {
         return qz.printers.find().then((printers) => {
           this.impressoraLista = printers
-          console.log(this.impressoraLista)
         })
       }
     },
