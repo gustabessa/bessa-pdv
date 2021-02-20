@@ -322,9 +322,9 @@ export default {
     }
   },
   mounted () {
-    this.filterFn()
     const cor = this.$store.state.themes.name
     this.primary = scss[cor]
+    this.filterFn()
   }
 }
 </script>
