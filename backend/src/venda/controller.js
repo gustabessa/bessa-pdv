@@ -339,7 +339,7 @@ exports.printVenda = (data) => {
               return
             }
           })
-      }, 60000);
+      }, 300000);
     }, 1000);
   })
 }

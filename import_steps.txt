@@ -1,3 +1,0 @@
-CARACTERES
-SEGURANÇA TODOS - CONTROLE TOTAL
-copy public.produtos (nome, preco, "precoCusto", "createdAt", "updatedAt", fk_produto_user) FROM 'C:/Users/VENDAS~1/Desktop/Produtos01022021.CSV' DELIMITER ';' CSV HEADER ENCODING 'UTF8';
