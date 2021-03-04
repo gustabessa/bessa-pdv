@@ -235,6 +235,7 @@ export default {
                 this.preco = data.preco
               }
               this.modalProduto = false
+              this.filterFn()
             } else if (data.hasError) {
               console.error(data.techError)
               this.$q.notify({
