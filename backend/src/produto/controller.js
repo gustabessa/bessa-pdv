@@ -13,6 +13,7 @@ exports.create = (req, res, next) => {
   produto.nome = req.body.nome
   produto.preco = req.body.preco
   produto.precoCusto = req.body.precoCusto
+  produto.ativo = true
 
   Produto.create(produto)
   .then(data => {
@@ -60,6 +61,7 @@ exports.findAll = (req, res, next) => {
 
   let where = {}
   where.fk_produto_user = req.userId
+  where.ativo = true
   if (req.query) {
     const q = req.query
     if (q.nome) {
@@ -120,10 +122,14 @@ exports.destroy = (req, res, next) => {
     next({messageError: 'Id deve ser diferente de nulo na exclusão.', techError: 'null id'})
   }
 
-  Produto.destroy({
-    where: {
-      id: req.body.id
-    }
+  Produto.update(
+    {
+      ativo: false
+    },
+    {
+      where: {
+        id: req.body.id
+      }
   })
   .then(affectedRows => {
     res.send({'message': 'ok', 'affectedRows': affectedRows})

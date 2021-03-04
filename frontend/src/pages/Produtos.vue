@@ -2,16 +2,8 @@
   <q-page class="flex flex-center">
     <q-card class="produtos-card q-mt-md q-mb-md">
       <q-card-section :class="theme" class="card-header">
-        Cadastro de Produtos
+        Produtos
         <div class="float-right">
-          <q-btn
-            flat
-            dense
-            round
-            v-if="id"
-            icon="delete"
-            @click="excluirProduto"
-          />
           <q-btn
             flat
             dense
@@ -43,7 +35,7 @@
             />
           </template>
         </q-input>
-        <template v-if="table">
+        <template>
           <div>
             <q-table
               class="my-sticky-header-table"
@@ -68,32 +60,63 @@
         </template>
 
       </q-card-section>
-      <q-separator />
-      <q-card-section>
-        <div class="row">
-          <div class="col-12">
-            <q-input :color='themeInput' dense outlined v-model="id" class="q-mb-md" label="Id" readonly />
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-12">
-            <q-input :color='themeInput' dense outlined v-model="nome" class="q-mb-md" label="Nome" ref="nomeProduto"/>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-xs-12 col-sm-6 q-pr-sm">
-            <q-input :color='themeInput' dense outlined v-model="precoCusto" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Custo" />
-          </div>
-          <div class="col-xs-12 col-sm-6">
-            <q-input :color='themeInput' dense outlined v-model="preco" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Venda" />
-          </div>
-        </div>
-      </q-card-section>
-      <q-card-actions align="center">
-        <!-- <q-btn style="width: 40%;" outline class="btn-purple-inverse" label="Limpar" @click="limparCampos()" /> -->
-        <q-btn :class="theme" style="width: 40%;" class="text-white" label="Salvar" :loading="loading" @click="criarProduto()" />
-      </q-card-actions>
     </q-card>
+    <q-dialog v-model="modalProduto">
+      <q-card>
+        <q-card-section :class="theme" class="card-header">
+          Detalhes
+          <div class="float-right">
+            <q-btn
+              flat
+              dense
+              round
+              icon="close"
+              @click="modalProduto = false"
+            />
+            <q-tooltip>
+              Fechar
+            </q-tooltip>
+          </div>
+          <div class="float-right">
+            <q-btn
+              flat
+              dense
+              round
+              v-if="id"
+              icon="delete"
+              @click="excluirProduto"
+            />
+            <q-tooltip>
+              Excluir Produto
+            </q-tooltip>
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <div class="row">
+            <div class="col-12">
+              <q-input :color='themeInput' dense outlined v-model="id" class="q-mb-md" label="Id" readonly />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <q-input :color='themeInput' dense outlined v-model="nome" class="q-mb-md" label="Nome" ref="nomeProduto" @keyup.enter="focarPrecoCusto"/>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12 col-sm-6 q-pr-sm">
+              <q-input :color='themeInput' dense outlined v-model="precoCusto" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Custo" ref="precoCusto" @keyup.enter="focarPrecoVenda"/>
+            </div>
+            <div class="col-xs-12 col-sm-6">
+              <q-input :color='themeInput' dense outlined v-model="preco" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Venda" ref="precoVenda" @keyup.enter="criarProduto"/>
+            </div>
+          </div>
+        </q-card-section>
+        <q-card-actions align="center">
+          <!-- <q-btn style="width: 40%;" outline class="btn-purple-inverse" label="Limpar" @click="limparCampos()" /> -->
+          <q-btn :class="theme" style="width: 40%;" class="text-white" label="Salvar" :loading="loading" @click="criarProduto" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -136,7 +159,7 @@ export default {
       nome: '',
       preco: null,
       precoCusto: null,
-      table: false
+      modalProduto: false
     }
   },
   methods: {
@@ -145,7 +168,6 @@ export default {
         data => {
           if (data && !data.hasError) {
             if (data.length > 0) {
-              this.table = true
               this.data = data
             } else {
               this.$q.notify({
@@ -153,7 +175,6 @@ export default {
                 message: 'Nenhum resultado para a busca.',
                 timeout: 2000
               })
-              this.table = false
             }
           } else if (data.hasError) {
             console.error(data.techError)
@@ -172,11 +193,10 @@ export default {
             message: 'Erro ao buscar.',
             timeout: 2000
           })
-          this.table = false
         }, { nome: this.model })
     },
     escolherProduto (evt, row, index) {
-      this.table = false
+      this.modalProduto = true
       this.id = row.id
       this.nome = row.nome
       this.preco = row.preco
@@ -214,6 +234,7 @@ export default {
                 this.nome = data.nome
                 this.preco = data.preco
               }
+              this.modalProduto = false
             } else if (data.hasError) {
               console.error(data.techError)
               this.$q.notify({
@@ -261,8 +282,18 @@ export default {
       this.nome = null
       this.preco = null
       this.precoCusto = null
-      this.table = false
-      this.$refs.nomeProduto.focus()
+      this.modalProduto = true
+      setTimeout(() => {
+        if (this.$refs.nomeProduto) {
+          this.$refs.nomeProduto.focus()
+        }
+      }, 300)
+    },
+    focarPrecoCusto () {
+      this.$refs.precoCusto.focus()
+    },
+    focarPrecoVenda () {
+      this.$refs.precoVenda.focus()
     },
     excluirProduto () {
       dialog.confirm('Deseja excluir o produto?')
@@ -280,6 +311,9 @@ export default {
                   message: 'Produto excluído com sucesso!',
                   timeout: 2000
                 })
+                this.modalProduto = false
+                this.model = ''
+                this.filterFn()
               } else if (data.hasError) {
                 console.error(data.techError)
                 this.$q.notify({
@@ -320,6 +354,7 @@ export default {
   mounted () {
     const cor = this.$store.state.themes.name
     this.primary = scss[cor]
+    this.filterFn()
   }
 }
 </script>
