@@ -575,7 +575,7 @@ export default {
         if (typeof this.preco === 'string') {
           this.preco = Number.parseFloat(this.preco.replace(',', '.')).toFixed(2)
         }
-        const arrAux = [...this.itensVenda]
+        const arrAux = JSON.parse(JSON.stringify([...this.itensVenda]))
 
         arrAux.push({
           nome: this.nome,
@@ -591,8 +591,8 @@ export default {
           item++
         })
 
-        this.itensVenda = arrAux
-        this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
+        this.itensVenda = JSON.parse(JSON.stringify(arrAux))
+        this.$store.dispatch('bessaPdv/itensVenda', arrAux)
         this.produtoSelecionado = false
         this.id = null
         this.nome = null
@@ -733,7 +733,7 @@ export default {
           if (row) {
             this.selected = [row]
           }
-          let arrAux = [...this.itensVenda]
+          let arrAux = JSON.parse(JSON.stringify([...this.itensVenda]))
           arrAux = arrAux.filter(itemVenda => itemVenda.item !== this.selected[0].item)
           this.selected = []
 
@@ -745,8 +745,8 @@ export default {
             }
             item++
           })
-          this.itensVenda = arrAux
-          this.$store.dispatch('bessaPdv/itensVenda', this.itensVenda)
+          this.itensVenda = JSON.parse(JSON.stringify(arrAux))
+          this.$store.dispatch('bessaPdv/itensVenda', arrAux)
           this.$q.notify({
             type: 'positive',
             message: 'Item excluído.',
