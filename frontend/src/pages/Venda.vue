@@ -422,7 +422,6 @@ export default {
             if (data.length > 0) {
               this.table = true
               this.data = data
-              console.log(data.length)
               setTimeout(() => {
                 this.focusedProduto = true
                 this.selectedProduto = []
