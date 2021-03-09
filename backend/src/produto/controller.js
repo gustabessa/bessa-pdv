@@ -79,7 +79,7 @@ exports.findAll = (req, res, next) => {
     }
   }
 
-  Produto.findAll({where: where, order: [['nome', 'ASC']]})
+  Produto.findAll({where: where, order: [['nome', 'ASC']], limit: 50})
   .then(data => {
     if (data) {
       res.send(data)
