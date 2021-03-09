@@ -113,23 +113,65 @@
         </div>
         <template v-if="table">
           <div>
+            <!-- Table header customizado fora da table para não interferir no table.scrollTo() -->
+            <!-- Cenários: Sticky top header tampa 1 linha -->
+            <!-- Header normal some no scroll -->
+            <div class="custom-header-wrapper">
+              <div style="width: 100%; display: flex;">
+                <div class="custom-th custom-border-right" style="width: 15%;"><span>Cod.</span></div>
+                <div class="custom-th custom-border-right" style="width: 55%;"><span>Produto</span></div>
+                <div class="custom-th" style="width: 30%;"><span>Preço (R$)</span></div>
+              </div>
+            </div>
             <q-table
+              :pagination.sync="pagination"
+              id="tableProduto"
+              :class="focusClassProduto"
+              tabindex="0"
+              ref="myTableProduto"
               style="height: 300px;"
               class="my-sticky-header-table produtosTable"
               :data="data"
               :columns="columns"
-              row-key="name"
+              row-key="id"
               bordered
               separator="cell"
               hide-bottom
-              @row-click="escolherProduto"
-              :rows-per-page-options="rowsPerPageOptions"
-            />
+              selection="single"
+              :selected.sync="selectedProduto"
+              @focusin.native="onFocusProduto"
+              @focusout.native="onBlurProduto"
+              @keydown.native="onKeyProduto"
+              :rows-per-page-options="[0]"
+            >
+              <template v-slot:header="props">
+                <q-tr :props="props" style="display: none;">
+                  <q-th :class="theme" v-for="col in props.cols" :key="col.name" :props="props">
+                    {{ col.label }}
+                  </q-th>
+                </q-tr>
+              </template>
+              <template v-slot:body="props">
+                <q-tr :props="props"
+                @click="escolherItemProduto(props.row)">
+                  <q-td key="cod" :props="props" style="width: 15%;">
+                    {{ props.row.id }}
+                  </q-td>
+                  <q-td key="nome" :props="props" style="width: 55%;">
+                    {{ props.row.nome }}
+                  </q-td>
+                  <q-td key="preco" :props="props" style="width: 30%;">
+                    {{ formataDinheiro(props.row.preco) }}
+                  </q-td>
+                </q-tr>
+              </template>
+            </q-table>
           </div>
         </template>
         <template v-if="!table">
           <div>
             <q-table
+              :pagination.sync="pagination"
               ref="myTable"
               tabindex="0"
               :class="focusClass"
@@ -146,7 +188,7 @@
               @focusin.native="onFocus"
               @focusout.native="onBlur"
               @keydown.native="onKey"
-              :rows-per-page-options="rowsPerPageOptions"
+              :rows-per-page-options="[0]"
             >
               <template v-slot:header="props">
                 <q-tr :props="props">
@@ -157,7 +199,7 @@
               </template>
               <template v-slot:body="props">
                 <q-tr :props="props"
-                  @click="escolherItem(props.row, props)">
+                  @click="escolherItem(props.row)">
                   <q-td key="opc" class="cursor-pointer" :props="props">
                     <q-btn
                       flat
@@ -171,13 +213,13 @@
                   <q-td key="cod" class="cursor-pointer" :props="props">
                     {{ props.row.fk_itemvenda_produto }}
                   </q-td>
-                  <q-td key="nome" :props="props">
+                  <q-td key="nome" class="cursor-pointer" :props="props">
                     {{ props.row.nome }}
                     <q-popup-edit @hide="atualizarStore" auto-save v-model="props.row.nome">
                       <q-input type="text" v-model="props.row.nome" dense autofocus />
                     </q-popup-edit>
                   </q-td>
-                  <q-td key="preco" :props="props">
+                  <q-td key="preco" class="cursor-pointer" :props="props">
                     {{ formataDinheiro(props.row.preco) }}
                     <q-popup-edit @hide="atualizarStore" auto-save v-model="props.row.preco">
                       <q-input ref="refPreco" v-model="props.row.preco" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco)" dense autofocus mask="#,##"
@@ -185,7 +227,7 @@
                         reverse-fill-mask />
                     </q-popup-edit>
                   </q-td>
-                  <q-td key="quantidade" @click="selectQuantidade" :props="props">
+                  <q-td key="quantidade" class="cursor-pointer" @click="selectQuantidade" :props="props">
                     {{ Number(props.row.quantidade).toFixed(2) }}
                     <q-popup-edit @hide="atualizarStore" auto-save v-model="props.row.quantidade">
                       <q-input ref="refQuantidade" type="number" v-model.number="props.row.quantidade" debounce="1000" @input="atualizaPrecoTotal(props.row, props.row.quantidade, props.row.preco)" dense autofocus />
@@ -280,6 +322,7 @@ export default {
       itensVenda: [],
       itensVendaTable: [],
       selected: [],
+      selectedProduto: [],
       loading: false,
       model: null,
       id: null,
@@ -289,7 +332,11 @@ export default {
       cliente: null,
       produtoSelecionado: null,
       table: false,
-      focused: false
+      focused: false,
+      focusedProduto: false,
+      pagination: {
+        rowsPerPage: 0
+      }
     }
   },
   methods: {
@@ -354,8 +401,16 @@ export default {
         })
         .onCancel(() => { this.loading = false })
     },
-    escolherItem (row, props) {
+    escolherItem (row) {
       this.selected = [row]
+    },
+    escolherItemProduto (row) {
+      if (this.selectedProduto && this.selectedProduto.includes(row)) {
+        this.selectedProduto = []
+        this.escolherProduto(row)
+        return
+      }
+      this.selectedProduto = [row]
     },
     formataDinheiro (val) {
       return `R$ ${Number(val).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')}`
@@ -367,6 +422,12 @@ export default {
             if (data.length > 0) {
               this.table = true
               this.data = data
+              setTimeout(() => {
+                this.focusedProduto = true
+                this.selectedProduto = []
+                document.getElementById('tableProduto').focus()
+                this.$refs.myTableProduto.scrollTo(0)
+              }, 100)
             } else {
               this.$q.notify({
                 type: 'negative',
@@ -492,7 +553,7 @@ export default {
         })
         .onCancel(() => { this.loading = false })
     },
-    escolherProduto (evt, row, index) {
+    escolherProduto (row) {
       this.model = null
       this.table = false
       this.id = row.id
@@ -563,12 +624,10 @@ export default {
     onFocus () {
       this.focused = true
     },
-
     onBlur () {
       this.focused = false
       this.selected = []
     },
-
     onKey (evt) {
       if (
         this.focused !== true ||
@@ -608,6 +667,65 @@ export default {
           break
       }
       this.selected = [computedRows[index]]
+      this.$refs.myTable.scrollTo(index)
+    },
+    onFocusProduto () {
+      this.focusedProduto = true
+    },
+    onBlurProduto () {
+      this.focusedProduto = false
+      this.selectedProduto = []
+    },
+    onKeyProduto (evt) {
+      const computedRows = this.$refs.myTableProduto.computedRows
+      if (
+        this.focusedProduto !== true ||
+        [33, 34, 38, 40, 46, 13].indexOf(evt.keyCode) === -1 ||
+        this.$refs.myTableProduto === undefined ||
+        !computedRows ||
+        !computedRows[0]
+      ) {
+        return
+      }
+      if (evt.keyCode === 13 && (!this.selectedProduto ||
+        !this.selectedProduto[0])) {
+        this.$q.notify({
+          type: 'warning',
+          message: 'Selecione um item primeiro.',
+          timeout: 2000
+        })
+        return
+      }
+      let index = 0
+      if (!this.selectedProduto ||
+        !this.selectedProduto[0]) {
+        this.selectedProduto = [computedRows[0]]
+      } else {
+        const currentIndex = this.selectedProduto.length > 0 ? computedRows.indexOf(this.selectedProduto[0]) : -1
+        const lastIndex = computedRows.length - 1
+        index = currentIndex
+
+        switch (evt.keyCode) {
+          case 38: // ArrowUp
+            if (currentIndex > 0) {
+              index = currentIndex - 1
+            }
+            break
+          case 40: // ArrowDown
+            if (currentIndex < lastIndex) {
+              index = currentIndex + 1
+            }
+            break
+          case 13:
+            this.escolherItemProduto(this.selectedProduto[0])
+            break
+        }
+        this.selectedProduto = [computedRows[index]]
+      }
+      evt.preventDefault()
+
+      this.$refs.myTableProduto.scrollTo(index)
+      // this.$refs.myTableProduto.scrollTo(index / 1.2)
     },
     removerSelecionado (row) {
       dialog.confirm('Deseja excluir o item?')
@@ -663,6 +781,11 @@ export default {
       if (this.focused) {
         return 'my-focused-table'
       } else return ''
+    },
+    focusClassProduto () {
+      if (this.focusedProduto) {
+        return 'my-focused-table'
+      } else return ''
     }
   },
   mounted () {
@@ -690,13 +813,6 @@ export default {
     max-height: 350px;
   }
 
-  .q-table__top,
-  .q-table__bottom,
-  thead tr:first-child th {
-    /* bg color is important for th; just specify one */
-    background-color: #c1f4cd;
-  }
-
   .card-header {
     padding: 5px 0 5px 15px;
   }
@@ -721,10 +837,28 @@ export default {
     background-color: blue !important;
   }
 
-  /* this is when the loading indicator appears */
-  .q-table--loading thead tr:last-child th {
-    /* height of all previous header rows */
-    top: 48px;
+  .custom-border-right {
+    border-right: solid 1px rgba(0, 0, 0, 0.12);
+  }
+
+  .custom-header-wrapper {
+    color: white;
+    display: flex;
+    width: 100%;
+    height: 50px;
+    background-color: blue;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding-right: 13px;
+  }
+
+  .custom-th {
+    font-size: 12px;
+    font-weight: 500;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
   }
 
   @media screen and (max-width: 599px) {

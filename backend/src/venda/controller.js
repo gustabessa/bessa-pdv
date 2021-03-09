@@ -253,9 +253,9 @@ exports.printVenda = (data) => {
 
     newArr.unshift([
       { text: 'Descrição', style: 'tableHeader' }, 
-      { text: 'Quantidade', style: 'tableHeaderRight' }, 
-      { text: 'Preço Un. (R$)', style: 'tableHeaderRight' },
-      { text: 'Preço Total (R$)', style: 'tableHeaderRight' }
+      { text: 'Qtde', style: 'tableHeaderRight' }, 
+      { text: 'Unitário (R$)', style: 'tableHeaderRight' },
+      { text: 'Total (R$)', style: 'tableHeaderRight' }
     ])
     const cliente = data.dataValues.cliente ? data.dataValues.cliente : 'consumidor'
     const codVenda = data.dataValues.id
