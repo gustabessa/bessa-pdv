@@ -45,8 +45,6 @@
           outlined
           ref="refProduto"
           v-model="model"
-          debounce="700"
-          @input="filterFn"
           @keyup.enter="filterFn"
           label="Produto"
           :color='themeInput'
