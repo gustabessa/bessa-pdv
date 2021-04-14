@@ -148,7 +148,7 @@ export default {
           align: 'left',
           label: 'Preço (R$)',
           field: row => row.preco,
-          format: val => `R$ ${Number.parseFloat(val).toFixed(2)}`.replace(',', '.').replace('.', ',')
+          format: val => `R$ ${val}`
         }
       ],
       primary: '#000000',
@@ -168,7 +168,13 @@ export default {
         data => {
           if (data && !data.hasError) {
             if (data.length > 0) {
-              this.data = data
+              this.data = data.map(produto => {
+                return {
+                  ...produto,
+                  preco: produto.preco.toString().replace('.', ','),
+                  precoCusto: produto.precoCusto.toString().replace('.', ',')
+                }
+              })
             } else {
               this.$q.notify({
                 type: 'negative',
