@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import bessaPdv from './bessaPdv'
+import configPdv from './configPdv'
 import themes from './themes'
 import createPersistedState from 'vuex-persistedstate'
 
@@ -21,7 +22,8 @@ export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     modules: {
       bessaPdv,
-      themes
+      themes,
+      configPdv
       // example
     },
     plugins: [createPersistedState()],

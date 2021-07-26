@@ -20,6 +20,9 @@ Produto.init({
   ativo: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  codBarras: {
+    type: DataTypes.STRING(255)
   }
 }, {sequelize, modelName: "produtos"})
 

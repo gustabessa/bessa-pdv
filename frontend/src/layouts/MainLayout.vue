@@ -45,6 +45,18 @@
             Escolher tema
           </q-tooltip>
         </div>
+        <div>
+          <q-btn
+            flat
+            dense
+            round
+            icon="settings"
+            @click="configuracoes()"
+          />
+          <q-tooltip>
+            Configurações
+          </q-tooltip>
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -104,6 +116,7 @@ const linksData = [
 ]
 import httpUtil from '../components/util/HttpUtil'
 import EscolhaTema from '../components/EscolhaTema'
+import Configuracoes from '../components/Configuracoes'
 
 export default {
   name: 'MainLayout',
@@ -149,6 +162,12 @@ export default {
     escolheTema () {
       this.$q.dialog({
         component: EscolhaTema,
+        parent: this
+      })
+    },
+    configuracoes () {
+      this.$q.dialog({
+        component: Configuracoes,
         parent: this
       })
     }

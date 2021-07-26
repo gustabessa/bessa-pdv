@@ -45,6 +45,8 @@
               bordered
               separator="cell"
               hide-bottom
+              virtual-scroll
+              :pagination.sync="pagination"
               @row-click="escolherProduto"
               :rows-per-page-options="rowsPerPageOptions"
             >
@@ -99,12 +101,17 @@
           </div>
           <div class="row">
             <div class="col-12">
-              <q-input :color='themeInput' dense outlined v-model="nome" class="q-mb-md" label="Nome" ref="nomeProduto" @keyup.enter="focarPrecoCusto"/>
+              <q-input :color='themeInput' dense outlined v-model="nome" class="q-mb-md" label="Nome" ref="nomeProduto" @keyup.enter="() => focarInput('codBarras')"/>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <q-input :color='themeInput' dense outlined v-model="codBarras" class="q-mb-md" label="Código de Barras" ref="codBarras" @keyup.enter="() => focarInput('precoCusto')"/>
             </div>
           </div>
           <div class="row">
             <div class="col-xs-12 col-sm-6 q-pr-sm">
-              <q-input :color='themeInput' dense outlined v-model="precoCusto" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Custo" ref="precoCusto" @keyup.enter="focarPrecoVenda"/>
+              <q-input :color='themeInput' dense outlined v-model="precoCusto" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Custo" ref="precoCusto" @keyup.enter="() => focarInput('precoVenda')"/>
             </div>
             <div class="col-xs-12 col-sm-6">
               <q-input :color='themeInput' dense outlined v-model="preco" mask="#,##" fill-mask="0" reverse-fill-mask class="q-mb-md" label="Preço de Venda" ref="precoVenda" @keyup.enter="criarProduto"/>
@@ -125,10 +132,14 @@ import httpUtil from '../components/util/HttpUtil'
 import dialog from '../components/util/DialogUtil'
 import themeUtil from '../components/util/ThemeUtil'
 import scss from '../css/quasar.variables.json'
+
 export default {
   name: 'Produtos',
   data () {
     return {
+      pagination: {
+        rowsPerPage: 0
+      },
       columns: [
         {
           name: 'cod',
@@ -159,7 +170,8 @@ export default {
       nome: '',
       preco: null,
       precoCusto: null,
-      modalProduto: false
+      modalProduto: false,
+      codBarras: ''
     }
   },
   methods: {
@@ -171,8 +183,8 @@ export default {
               this.data = data.map(produto => {
                 return {
                   ...produto,
-                  preco: produto.preco.toString().replace('.', ','),
-                  precoCusto: produto.precoCusto.toString().replace('.', ',')
+                  preco: produto.preco?.toString().replace('.', ','),
+                  precoCusto: produto.precoCusto?.toString().replace('.', ',')
                 }
               })
             } else {
@@ -205,6 +217,7 @@ export default {
       this.modalProduto = true
       this.id = row.id
       this.nome = row.nome
+      this.codBarras = row.codBarras
       this.preco = row.preco
       this.precoCusto = row.precoCusto
     },
@@ -224,6 +237,7 @@ export default {
           id: this.id,
           nome: this.nome,
           preco: this.preco.replace('.', '').replace(',', '.'),
+          codBarras: this.codBarras,
           precoCusto: this.precoCusto ? this.precoCusto.replace('.', '').replace(',', '.') : null
         }
         const callback = {
@@ -239,6 +253,7 @@ export default {
                 this.id = data.id
                 this.nome = data.nome
                 this.preco = data.preco
+                this.codBarras = data.codBarras
               }
               this.modalProduto = false
               this.filterFn()
@@ -289,18 +304,16 @@ export default {
       this.nome = null
       this.preco = null
       this.precoCusto = null
+      this.codBarras = null
       this.modalProduto = true
       setTimeout(() => {
-        if (this.$refs.nomeProduto) {
-          this.$refs.nomeProduto.focus()
-        }
+        this.focarInput('nomeProduto')
       }, 300)
     },
-    focarPrecoCusto () {
-      this.$refs.precoCusto.focus()
-    },
-    focarPrecoVenda () {
-      this.$refs.precoVenda.focus()
+    focarInput (ref) {
+      if (this.$refs[ref]) {
+        this.$refs[ref].focus()
+      }
     },
     excluirProduto () {
       dialog.confirm('Deseja excluir o produto?')

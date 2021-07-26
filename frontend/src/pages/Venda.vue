@@ -39,7 +39,7 @@
           class="q-mb-md"
           :color='themeInput'
           @blur="salvarCliente"
-          @keyup.enter="focusProduto"
+          @keyup.enter="() => focarInput('refProduto')"
           dense />
         <q-input
           outlined
@@ -136,6 +136,7 @@
               separator="cell"
               hide-bottom
               selection="single"
+              virtual-scroll
               :selected.sync="selectedProduto"
               @focusin.native="onFocusProduto"
               @focusout.native="onBlurProduto"
@@ -423,6 +424,7 @@ export default {
               setTimeout(() => {
                 this.focusedProduto = true
                 this.selectedProduto = []
+                this.escolherItemProduto(data[0])
                 document.getElementById('tableProduto').focus()
                 this.$refs.myTableProduto.scrollTo(0)
               }, 100)
@@ -529,27 +531,39 @@ export default {
         }
       }
       const vendaSubtotal = this.getSubtotal()
-      this.$q.dialog({
-        component: ConfirmacaoVenda,
-        parent: this,
-        subtotal: vendaSubtotal.toFixed(2)
-      })
-        .onOk(valores => {
-          const venda = {
-            cliente: this.cliente,
-            subtotal: this.getSubtotal(),
-            itensVenda: this.itensVenda,
-            total: valores.vlrTotal,
-            desconto: valores.vlrDesconto,
-            frete: valores.vlrFrete,
-            qtdeFrete: valores.qtdeFrete
-          }
-          this.$q.loading.show({
-            spinnerColor: this.primary
-          })
-          httpUtil.doPost('/api/venda', venda, callback.onSuccess, callback.onError)
+      if (!this.informacoesAdicionaisVenda) {
+        this.salvarVenda({
+          vlrTotal: this.getSubtotal(),
+          vlrDesconto: 0,
+          vlrFrete: 0,
+          qtdeFrete: 0
+        }, callback)
+      } else {
+        this.$q.dialog({
+          component: ConfirmacaoVenda,
+          parent: this,
+          subtotal: vendaSubtotal.toFixed(2)
         })
-        .onCancel(() => { this.loading = false })
+          .onOk(valores => {
+            this.salvarVenda(valores, callback)
+          })
+          .onCancel(() => { this.loading = false })
+      }
+    },
+    salvarVenda (valores, callback) {
+      const venda = {
+        cliente: this.cliente,
+        subtotal: this.getSubtotal(),
+        itensVenda: this.itensVenda,
+        total: valores.vlrTotal,
+        desconto: valores.vlrDesconto,
+        frete: valores.vlrFrete,
+        qtdeFrete: valores.qtdeFrete
+      }
+      this.$q.loading.show({
+        spinnerColor: this.primary
+      })
+      httpUtil.doPost('/api/venda', venda, callback.onSuccess, callback.onError)
     },
     escolherProduto (row) {
       this.model = null
@@ -559,11 +573,13 @@ export default {
       this.preco = row.preco
       this.produtoSelecionado = true
       setTimeout(() => {
-        this.$refs.quantidadeRef.focus()
+        this.focarInput('quantidadeRef')
       }, 200)
     },
-    focusProduto () {
-      this.$refs.refProduto.focus()
+    focarInput (ref) {
+      if (this.$refs[ref]) {
+        this.$refs[ref].focus()
+      }
     },
     salvarCliente () {
       this.$store.dispatch('bessaPdv/cliente', this.cliente)
@@ -596,7 +612,7 @@ export default {
         this.nome = null
         this.preco = null
         this.quantidade = null
-        this.$refs.refProduto.focus()
+        this.focarInput('refProduto')
       } else {
         this.$q.notify({
           type: 'negative',
@@ -784,9 +800,15 @@ export default {
       if (this.focusedProduto) {
         return 'my-focused-table'
       } else return ''
+    },
+    informacoesAdicionaisVenda () {
+      return this.$store.getters['configPdv/informacoesAdicionaisVendaGetter']
     }
   },
   mounted () {
+    setTimeout(() => {
+      this.focarInput('refProduto')
+    }, 300)
     const cor = this.$store.state.themes.name
     this.primary = scss[cor]
     this.cliente = this.$store.getters['bessaPdv/clienteGetter']

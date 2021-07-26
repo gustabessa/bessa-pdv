@@ -78,20 +78,9 @@ export default {
     hide () {
       this.$refs.dialog.hide()
     },
-
     onDialogHide () {
       this.$emit('hide')
     },
-
-    onOKClick () {
-      this.$emit('ok')
-      this.hide()
-    },
-
-    onCancelClick () {
-      this.hide()
-    },
-
     escolherCor (cor) {
       colors.setBrand('primary', scss[cor])
       switch (cor) {

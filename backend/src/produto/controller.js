@@ -13,6 +13,7 @@ exports.create = (req, res, next) => {
   produto.nome = req.body.nome
   produto.preco = req.body.preco
   produto.precoCusto = req.body.precoCusto
+  produto.codBarras = req.body.codBarras
   produto.ativo = true
 
   Produto.create(produto)
@@ -40,6 +41,7 @@ exports.update = (req, res, next) => {
   }
   produto.nome = req.body.nome
   produto.preco = req.body.preco
+  produto.codBarras = req.body.codBarras
   produto.precoCusto = req.body.precoCusto
 
   condicao.where.id = req.body.id
@@ -65,21 +67,33 @@ exports.findAll = (req, res, next) => {
   if (req.query) {
     const q = req.query
     if (q.nome) {
-      const palavras = q.nome.trim().split(' ')
-      q.nome = ''
-      palavras.forEach(palavra => {
-        if (palavra !== '') {
-          q.nome += '%' + palavra.trim() + '% '
+      const palavras = q.nome.trim().split(" ");
+      q.nome = "";
+      palavras.forEach((palavra) => {
+        if (palavra !== "") {
+          q.nome += "%" + palavra.trim() + "% ";
         }
-      }); 
-      q.nome = q.nome.trim()
-      where.nome = {
-        [Op.iLike]: q.nome
-      } 
+      });
+      q.nome = q.nome.trim();
+      where = {
+        ...where,
+        [Op.or]: [
+          {
+            nome: {
+              [Op.iLike]: q.nome,
+            },
+          },
+          {
+            codBarras: {
+              [Op.iLike]: q.nome,
+            },
+          },
+        ],
+      };
     }
   }
 
-  Produto.findAll({where: where, order: [['nome', 'ASC']], limit: 50})
+  Produto.findAll({where: where, order: [['nome', 'ASC']]})
   .then(data => {
     if (data) {
       res.send(data)
