@@ -17,6 +17,7 @@
       <q-card-section>
         <q-input
           outlined
+          ref="searchInput"
           v-model="model"
           debounce="700"
           @input="filterFn"
@@ -202,6 +203,7 @@ export default {
               timeout: 2000
             })
           }
+          this.selecionarInput('searchInput')
         },
         err => {
           console.error(err)
@@ -211,6 +213,7 @@ export default {
             message: 'Erro ao buscar.',
             timeout: 2000
           })
+          this.selecionarInput('searchInput')
         }, { nome: this.model })
     },
     escolherProduto (evt, row, index) {
@@ -313,6 +316,11 @@ export default {
     focarInput (ref) {
       if (this.$refs[ref]) {
         this.$refs[ref].focus()
+      }
+    },
+    selecionarInput (ref) {
+      if (this.$refs[ref]) {
+        this.$refs[ref].select()
       }
     },
     excluirProduto () {
