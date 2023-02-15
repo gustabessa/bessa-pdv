@@ -576,6 +576,20 @@ export default {
         this.focarInput('quantidadeRef')
       }, 200)
     },
+    cancelarProdutoSelecionado () {
+      this.model = null
+      this.table = false
+      this.id = null
+      this.nome = null
+      this.preco = null
+      this.produtoSelecionado = false
+      this.focarInput('refProduto')
+    },
+    keyDownHandler (evt) {
+      if (evt.keyCode === 27) {
+        this.cancelarProdutoSelecionado()
+      }
+    },
     focarInput (ref) {
       if (this.$refs[ref]) {
         this.$refs[ref].focus()
@@ -805,7 +819,13 @@ export default {
       return this.$store.getters['configPdv/informacoesAdicionaisVendaGetter']
     }
   },
+  destroyed () {
+    const vendaComponent = this
+    document.removeEventListener('keydown', vendaComponent.keyDownHandler)
+  },
   mounted () {
+    const vendaComponent = this
+    document.addEventListener('keydown', vendaComponent.keyDownHandler)
     setTimeout(() => {
       this.focarInput('refProduto')
     }, 300)

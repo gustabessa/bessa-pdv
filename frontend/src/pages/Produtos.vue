@@ -19,8 +19,6 @@
           outlined
           ref="searchInput"
           v-model="model"
-          debounce="700"
-          @input="filterFn"
           @keyup.enter="filterFn"
           placeholder="Pesquisar Produto"
           hint="Busque pelo nome do produto"
@@ -313,6 +311,16 @@ export default {
         this.focarInput('nomeProduto')
       }, 300)
     },
+    cancelarProdutoSelecionado () {
+      setTimeout(() => {
+        this.selecionarInput('searchInput')
+      }, 300)
+    },
+    keyDownHandler (evt) {
+      if (evt.keyCode === 27) {
+        this.cancelarProdutoSelecionado()
+      }
+    },
     focarInput (ref) {
       if (this.$refs[ref]) {
         this.$refs[ref].focus()
@@ -379,7 +387,16 @@ export default {
       return [100]
     }
   },
+  destroyed () {
+    const produtosComponent = this
+    document.removeEventListener('keydown', produtosComponent.keyDownHandler)
+  },
   mounted () {
+    const produtosComponent = this
+    document.addEventListener('keydown', produtosComponent.keyDownHandler)
+    setTimeout(() => {
+      this.focarInput('refProduto')
+    }, 300)
     const cor = this.$store.state.themes.name
     this.primary = scss[cor]
     this.filterFn()
